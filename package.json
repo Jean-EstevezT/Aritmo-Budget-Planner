@@ -1,0 +1,20 @@
+{
+  "name": "aritmo",
+  "version": "1.0.0",
+  "description": "Visual dashboard for budget tracking.",
+  "main": "src/main/main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^25.3.1"
+  },
+  "dependencies": {
+    "chart.js": "^4.3.0",
+    "knex": "^3.1.0",
+    "sqlite3": "^5.1.6"
+  }
+}
