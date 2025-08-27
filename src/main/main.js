@@ -2,6 +2,23 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const { setupDatabase, knex, insertDefaultExpenseCategories, insertDefaultIncomeCategories } = require('./database');
 
+// --- Utility helpers ---
+const toNumber = (v) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+};
+const toIntOrNull = (v) => {
+    const n = parseInt(v, 10);
+    return Number.isFinite(n) ? n : null;
+};
+const coerceFields = (row, fields) => {
+    if (!row) return row;
+    const patch = {};
+    for (const f of fields) patch[f] = toNumber(row[f]);
+    return { ...row, ...patch };
+};
+const coerceArrayFields = (rows, fields) => Array.isArray(rows) ? rows.map(r => coerceFields(r, fields)) : [];
+
 function createWindow() {
   const win = new BrowserWindow({
     width: 1600,
@@ -47,18 +64,21 @@ app.on('quit', async () => {
 // --- IPC HANDLERS ---
 // --- IPC handler for the Drill Down chart ---
 ipcMain.handle('get-monthly-expenses-for-category', async (_, categoryId) => {
-    if (!categoryId) return [];
+    const cid = toIntOrNull(categoryId);
+    if (!cid) return [];
     try {
-    // extract year-month and group by it
+        // extract year-month and group by it
         const result = await knex('expenses')
             .select(
                 knex.raw("strftime('%Y-%m', date) as month"),
                 knex.raw("SUM(amount) as total")
             )
-            .where({ category_id: categoryId })
+            .where({ category_id: cid })
             .groupBy('month')
             .orderBy('month', 'asc');
-        return result;
+
+        // Coerce totals to numbers for renderer safety
+        return result.map(r => ({ month: r.month, total: toNumber(r.total) }));
     } catch (error) {
         console.error("Error fetching drill down data:", error);
         return [];
@@ -66,29 +86,61 @@ ipcMain.handle('get-monthly-expenses-for-category', async (_, categoryId) => {
 });
 
 // -- Transactions and categories --
-ipcMain.handle('get-expenses', async () => knex('expenses').join('expense_categories', 'expenses.category_id', 'expense_categories.id').select('expenses.*', 'expense_categories.name as category_name').orderBy('date', 'desc'));
-ipcMain.handle('add-expense', async (_, data) => knex('expenses').insert(data));
+ipcMain.handle('get-expenses', async () => {
+    const rows = await knex('expenses')
+        .join('expense_categories', 'expenses.category_id', 'expense_categories.id')
+        .select('expenses.*', 'expense_categories.name as category_name')
+        .orderBy('date', 'desc');
+    return coerceArrayFields(rows, ['amount']);
+});
+ipcMain.handle('add-expense', async (_, data) => {
+    const payload = {
+        date: data.date,
+        description: data.description,
+        amount: toNumber(data.amount),
+        category_id: toIntOrNull(data.category_id),
+        notes: data.notes || null
+    };
+    return knex('expenses').insert(payload);
+});
 ipcMain.handle('get-expense-categories', async () => knex('expense_categories').select('*').orderBy('name'));
 ipcMain.handle('add-expense-category', async (_, name) => knex('expense_categories').insert({ name }));
 ipcMain.handle('delete-expense-category', async (_, id) => {
-    await knex('expenses').where({ category_id: id }).del();
-    return knex('expense_categories').where({ id }).del();
+    const cid = toIntOrNull(id);
+    await knex('expenses').where({ category_id: cid }).del();
+    return knex('expense_categories').where({ id: cid }).del();
 });
 
-ipcMain.handle('get-income', async () => knex('income').join('income_categories', 'income.category_id', 'income_categories.id').select('income.*', 'income_categories.name as category_name').orderBy('date', 'desc'));
-ipcMain.handle('add-income', async (_, data) => knex('income').insert(data));
+ipcMain.handle('get-income', async () => {
+    const rows = await knex('income')
+        .join('income_categories', 'income.category_id', 'income_categories.id')
+        .select('income.*', 'income_categories.name as category_name')
+        .orderBy('date', 'desc');
+    return coerceArrayFields(rows, ['amount']);
+});
+ipcMain.handle('add-income', async (_, data) => {
+    const payload = {
+        date: data.date,
+        source: data.source,
+        amount: toNumber(data.amount),
+        category_id: toIntOrNull(data.category_id),
+        notes: data.notes || null
+    };
+    return knex('income').insert(payload);
+});
 ipcMain.handle('get-income-categories', async () => knex('income_categories').select('*').orderBy('name'));
 ipcMain.handle('add-income-category', async (_, name) => knex('income_categories').insert({ name }));
 ipcMain.handle('delete-income-category', async (_, id) => {
-    await knex('income').where({ category_id: id }).del();
-    return knex('income_categories').where({ id }).del();
+    const cid = toIntOrNull(id);
+    await knex('income').where({ category_id: cid }).del();
+    return knex('income_categories').where({ id: cid }).del();
 });
 
 // Delete a single transaction (expense or income)
 ipcMain.handle('delete-transaction', async (_, { type, id }) => {
     try {
         const table = type === 'expenses' ? 'expenses' : 'income';
-        await knex(table).where({ id }).del();
+        await knex(table).where({ id: toIntOrNull(id) }).del();
         return { success: true };
     } catch (err) {
         console.error('Error deleting transaction:', err);
@@ -98,22 +150,30 @@ ipcMain.handle('delete-transaction', async (_, { type, id }) => {
 
 ipcMain.handle('get-transaction', async (_, { type, id }) => {
     const table = type === 'expenses' ? 'expenses' : 'income';
-    return knex(table).where({ id }).first();
+    const row = await knex(table).where({ id: toIntOrNull(id) }).first();
+    return coerceFields(row, ['amount']);
 });
 
 ipcMain.handle('update-transaction', async (_, { type, id, ...data }) => {
     const table = type === 'expenses' ? 'expenses' : 'income';
-    return knex(table).where({ id }).update(data);
+    const payload = {
+        date: data.date,
+        amount: toNumber(data.amount),
+        category_id: toIntOrNull(data.category_id),
+        notes: data.notes || null,
+        ...(type === 'expenses' ? { description: data.description } : { source: data.source })
+    };
+    return knex(table).where({ id: toIntOrNull(id) }).update(payload);
 });
 
 ipcMain.handle('get-category', async (_, { type, id }) => {
     const table = type === 'expense' ? 'expense_categories' : 'income_categories';
-    return knex(table).where({ id }).first();
+    return knex(table).where({ id: toIntOrNull(id) }).first();
 });
 
 ipcMain.handle('update-category', async (_, { type, id, name }) => {
     const table = type === 'expense' ? 'expense_categories' : 'income_categories';
-    return knex(table).where({ id }).update({ name });
+    return knex(table).where({ id: toIntOrNull(id) }).update({ name });
 });
 
 ipcMain.handle('get-expense-budget-data', async () => {
@@ -206,8 +266,21 @@ ipcMain.handle('get-dashboard-data', async () => {
             monthCount: monthCount
         };
 
-        const expensesByCategory = await knex('expenses').join('expense_categories', 'expenses.category_id', 'expense_categories.id').select('expense_categories.name').groupBy('name').sum('amount as total').orderBy('total', 'desc');
-        const incomeByCategory = await knex('income').join('income_categories', 'income.category_id', 'income_categories.id').select('income_categories.name').groupBy('name').sum('amount as total').orderBy('total', 'desc');
+        const expensesByCategoryRaw = await knex('expenses')
+            .join('expense_categories', 'expenses.category_id', 'expense_categories.id')
+            .select('expense_categories.name')
+            .groupBy('name')
+            .sum('amount as total')
+            .orderBy('total', 'desc');
+        const incomeByCategoryRaw = await knex('income')
+            .join('income_categories', 'income.category_id', 'income_categories.id')
+            .select('income_categories.name')
+            .groupBy('name')
+            .sum('amount as total')
+            .orderBy('total', 'desc');
+
+        const expensesByCategory = expensesByCategoryRaw.map(r => ({ name: r.name, total: toNumber(r.total) }));
+        const incomeByCategory = incomeByCategoryRaw.map(r => ({ name: r.name, total: toNumber(r.total) }));
 
         return { summary, expensesByCategory, incomeByCategory };
     } catch (error) {
@@ -221,7 +294,7 @@ ipcMain.handle('update-budget-target', async (_, { type, categoryId, target }) =
     console.log(`[Backend] Updating budget target for ${type} ID ${categoryId} to ${target}`);
     try {
         const tableName = type === 'expense' ? 'expense_categories' : 'income_categories';
-        await knex(tableName).where({ id: categoryId }).update({ budget_target: target });
+        await knex(tableName).where({ id: toIntOrNull(categoryId) }).update({ budget_target: toNumber(target) });
         return { success: true };
     } catch (error) {
         console.error("Error updating budget target:", error);

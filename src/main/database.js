@@ -9,6 +9,17 @@ const knex = require('knex')({
   useNullAsDefault: true
 });
 
+// Configure SQLite pragmas for safety and performance
+const configureSQLite = async () => {
+  try {
+    await knex.raw('PRAGMA foreign_keys = ON');
+    await knex.raw('PRAGMA journal_mode = WAL');
+    await knex.raw('PRAGMA synchronous = NORMAL');
+  } catch (e) {
+    console.error('Failed to configure SQLite pragmas:', e);
+  }
+};
+
 async function insertDefaultExpenseCategories() {
     const defaultCategories = [
         { name: 'Car maintenance' },
@@ -74,6 +85,7 @@ async function insertDefaultIncomeCategories() {
 // Initialize and migrate the database schema
 async function setupDatabase() {
   try {
+      await configureSQLite();
       // --- Expense categories table ---
     if (!(await knex.schema.hasTable('expense_categories'))) {
       await knex.schema.createTable('expense_categories', table => {
@@ -122,6 +134,16 @@ async function setupDatabase() {
         table.integer('category_id').unsigned().references('id').inTable('income_categories').onDelete('SET NULL');
         table.text('notes').nullable();
       });
+    }
+
+    // Helpful indexes
+    try {
+      await knex.raw('CREATE INDEX IF NOT EXISTS idx_expenses_category_id ON expenses(category_id)');
+      await knex.raw('CREATE INDEX IF NOT EXISTS idx_income_category_id ON income(category_id)');
+      await knex.raw('CREATE INDEX IF NOT EXISTS idx_expenses_date ON expenses(date)');
+      await knex.raw('CREATE INDEX IF NOT EXISTS idx_income_date ON income(date)');
+    } catch (e) {
+      console.warn('Index creation warning:', e);
     }
 
     await insertDefaultExpenseCategories();

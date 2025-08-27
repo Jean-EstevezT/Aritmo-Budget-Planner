@@ -1,5 +1,13 @@
 const { ipcRenderer } = require('electron');
 const { Chart } = require('chart.js/auto');
+
+// Formatting helpers
+const num = (v) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+};
+const money = (v) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(num(v));
+
 // Simple local icon renderer: ensures .icon elements are visible.
 function renderLocalIcons() {
     document.querySelectorAll('.icon').forEach(el => {
@@ -88,12 +96,12 @@ async function initDashboardPage() {
         const monthCount = summary.monthCount > 0 ? summary.monthCount : 1;
 
         // Actualizar todas las tarjetas de resumen
-        document.getElementById('summary-income').textContent = `$${(summary.totalIncome || 0).toFixed(2)}`;
-        document.getElementById('summary-expenses').textContent = `$${(summary.totalExpenses || 0).toFixed(2)}`;
-        document.getElementById('summary-savings').textContent = `$${(summary.totalSavings || 0).toFixed(2)}`;
-        document.getElementById('monthly-avg-income').textContent = `$${(summary.totalIncome / monthCount).toFixed(2)}`;
-        document.getElementById('monthly-avg-expenses').textContent = `$${(summary.totalExpenses / monthCount).toFixed(2)}`;
-        document.getElementById('monthly-avg-savings').textContent = `$${(summary.totalSavings / monthCount).toFixed(2)}`;
+        document.getElementById('summary-income').textContent = money(summary.totalIncome);
+        document.getElementById('summary-expenses').textContent = money(summary.totalExpenses);
+        document.getElementById('summary-savings').textContent = money(summary.totalSavings);
+        document.getElementById('monthly-avg-income').textContent = money(summary.totalIncome / monthCount);
+        document.getElementById('monthly-avg-expenses').textContent = money(summary.totalExpenses / monthCount);
+        document.getElementById('monthly-avg-savings').textContent = money(summary.totalSavings / monthCount);
 
     // Render main charts
         renderPieChart('expensesPieChart', expensesByCategory, 'No expenses');
@@ -154,8 +162,8 @@ function populateDetailsTable(bodyId, data, monthCount) {
         data.forEach(item => {
             const tr = document.createElement('tr');
             const tdName = document.createElement('td'); tdName.textContent = item.name;
-            const tdTotal = document.createElement('td'); tdTotal.textContent = `$${item.total.toFixed(2)}`;
-            const tdAvg = document.createElement('td'); tdAvg.textContent = `$${(item.total / monthCount).toFixed(2)}`;
+            const tdTotal = document.createElement('td'); tdTotal.textContent = money(item.total);
+            const tdAvg = document.createElement('td'); tdAvg.textContent = money(item.total / monthCount);
             tr.appendChild(tdName); tr.appendChild(tdTotal); tr.appendChild(tdAvg);
             df.appendChild(tr);
         });
@@ -258,7 +266,7 @@ async function initTransactionsPage(type) {
             const tr = document.createElement('tr');
             const desc = isExpenses ? item.description : item.source;
             // Add a delete button per row
-            tr.innerHTML = `<td>${item.date}</td><td>${desc}</td><td>$${item.amount.toFixed(2)}</td><td>${item.category_name}</td><td>${item.notes || ''}</td><td><button class="edit-transaction-btn" data-id="${item.id}" data-type="${type}"><span class="icon">✏️</span></button><button class="delete-transaction-btn" data-id="${item.id}" data-type="${type}"><span class="icon">🗑️</span></button></td>`;
+            tr.innerHTML = `<td>${item.date}</td><td>${desc}</td><td>${money(item.amount)}</td><td>${item.category_name}</td><td>${item.notes || ''}</td><td><button class="edit-transaction-btn" data-id="${item.id}" data-type="${type}"><span class="icon">✏️</span></button><button class="delete-transaction-btn" data-id="${item.id}" data-type="${type}"><span class="icon">🗑️</span></button></td>`;
             df2.appendChild(tr);
         });
         tableBody.appendChild(df2);
@@ -399,12 +407,11 @@ async function initBudgetsPage() {
     const expenseTableBody = document.getElementById('expense-budgets-table').querySelector('tbody');
     const incomeTableBody = document.getElementById('income-budgets-table').querySelector('tbody');
 
-    // Function to populate a budgets table
-    async function populateBudgetTable(type, tableBody) {
-        const isExpense = type === 'expense';
-        const categories = await ipcRenderer.invoke(isExpense ? 'get-expense-categories' : 'get-income-categories');
+    // Expense budgets with analytics from backend
+    async function populateExpenseBudgetTable() {
+        const categories = await ipcRenderer.invoke('get-expense-budget-data'); // includes analytics fields
 
-        tableBody.innerHTML = '';
+        expenseTableBody.innerHTML = '';
         categories.forEach(cat => {
             const row = document.createElement('tr');
             row.innerHTML = `
@@ -413,33 +420,32 @@ async function initBudgetsPage() {
                     <input
                         type="number"
                         class="budget-input"
-                        value="${cat.budget_target || 0}"
+                        value="${num(cat.budget_target)}"
                         data-id="${cat.id}"
-                        data-type="${type}"
+                        data-type="expense"
                         step="10"
                         placeholder="0.00">
                 </td>
+                <td>${money(cat.monthly_avg)}</td>
+                <td>${money(cat.three_month_total)}</td>
+                <td>${money(cat.est_annual_spending)}</td>
+                <td>${money(cat.difference)}</td>
                 <td>
-                    <button class="edit-budget-btn" data-id="${cat.id}" data-type="${type}"><span class="icon">✏️</span></button>
-                    <button class="delete-budget-btn" data-id="${cat.id}" data-type="${type}"><span class="icon">🗑️</span></button>
+                    <button class="edit-budget-btn" data-id="${cat.id}" data-type="expense"><span class="icon">✏️</span></button>
+                    <button class="delete-budget-btn" data-id="${cat.id}" data-type="expense"><span class="icon">🗑️</span></button>
                 </td>
             `;
-            tableBody.appendChild(row);
+            expenseTableBody.appendChild(row);
         });
 
-        // Attach delete handlers for budget rows
-        tableBody.querySelectorAll('.delete-budget-btn').forEach(btn => {
+        // Delete handlers
+        expenseTableBody.querySelectorAll('.delete-budget-btn').forEach(btn => {
             btn.addEventListener('click', async () => {
                 const id = btn.dataset.id;
-                const type = btn.dataset.type; // 'expense' or 'income'
                 if (!confirm('Delete this category and its transactions?')) return;
                 try {
-                    if (type === 'expense') {
-                        await ipcRenderer.invoke('delete-expense-category', Number(id));
-                    } else {
-                        await ipcRenderer.invoke('delete-income-category', Number(id));
-                    }
-                    await populateBudgetTable(type, tableBody);
+                    await ipcRenderer.invoke('delete-expense-category', Number(id));
+                    await populateExpenseBudgetTable();
                     notifyDataChanged();
                 } catch (err) {
                     console.error('Error deleting budget category:', err);
@@ -448,43 +454,118 @@ async function initBudgetsPage() {
             });
         });
 
-        // Attach edit handlers for budget rows
-        tableBody.querySelectorAll('.edit-budget-btn').forEach(btn => {
+        // Edit handlers
+        expenseTableBody.querySelectorAll('.edit-budget-btn').forEach(btn => {
             btn.addEventListener('click', async () => {
-                const id = btn.dataset.id;
-                const type = btn.dataset.type;
-                const category = await ipcRenderer.invoke('get-category', { type, id: Number(id) });
-                openEditBudgetModal(type, category);
+                const id = Number(btn.dataset.id);
+                const category = await ipcRenderer.invoke('get-category', { type: 'expense', id });
+                openEditBudgetModal('expense', category);
+            });
+        });
+
+        // Input change handlers (update target and refresh analytics)
+        expenseTableBody.querySelectorAll('.budget-input').forEach(input => {
+            input.addEventListener('change', async (e) => {
+                const targetEl = e.target;
+                const categoryId = targetEl.dataset.id;
+                const newTargetValue = num(targetEl.value);
+
+                const result = await ipcRenderer.invoke('update-budget-target', {
+                    type: 'expense',
+                    categoryId,
+                    target: newTargetValue
+                });
+
+                if (result.success) {
+                    targetEl.style.borderColor = 'green';
+                    setTimeout(() => targetEl.style.borderColor = '', 800);
+                    await populateExpenseBudgetTable(); // refresh metrics
+                    notifyDataChanged();
+                } else {
+                    targetEl.style.borderColor = 'red';
+                }
             });
         });
     }
 
-    // Load tables
-    await populateBudgetTable('expense', expenseTableBody);
-    await populateBudgetTable('income', incomeTableBody);
+    // Income budgets (no analytics table columns)
+    async function populateIncomeBudgetTable() {
+        const categories = await ipcRenderer.invoke('get-income-categories');
 
-    // Add event listeners to all inputs
-    document.querySelectorAll('.budget-input').forEach(input => {
-        input.addEventListener('change', async (e) => {
-            const target = e.target;
-            const categoryId = target.dataset.id;
-            const type = target.dataset.type;
-            const newTargetValue = parseFloat(target.value) || 0;
-
-            const result = await ipcRenderer.invoke('update-budget-target', {
-                type: type,
-                categoryId: categoryId,
-                target: newTargetValue
-            });
-
-            if (result.success) {
-                target.style.borderColor = 'green';
-                setTimeout(() => target.style.borderColor = '', 1000);
-            } else {
-                target.style.borderColor = 'red';
-            }
+        incomeTableBody.innerHTML = '';
+        categories.forEach(cat => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${cat.name}</td>
+                <td>
+                    <input
+                        type="number"
+                        class="budget-input"
+                        value="${num(cat.budget_target)}"
+                        data-id="${cat.id}"
+                        data-type="income"
+                        step="10"
+                        placeholder="0.00">
+                </td>
+                <td>
+                    <button class="edit-budget-btn" data-id="${cat.id}" data-type="income"><span class="icon">✏️</span></button>
+                    <button class="delete-budget-btn" data-id="${cat.id}" data-type="income"><span class="icon">🗑️</span></button>
+                </td>
+            `;
+            incomeTableBody.appendChild(row);
         });
-    });
+
+        // Delete handlers
+        incomeTableBody.querySelectorAll('.delete-budget-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const id = btn.dataset.id;
+                if (!confirm('Delete this category and its transactions?')) return;
+                try {
+                    await ipcRenderer.invoke('delete-income-category', Number(id));
+                    await populateIncomeBudgetTable();
+                    notifyDataChanged();
+                } catch (err) {
+                    console.error('Error deleting budget category:', err);
+                    alert('Error deleting category. See console.');
+                }
+            });
+        });
+
+        // Edit handlers
+        incomeTableBody.querySelectorAll('.edit-budget-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const id = Number(btn.dataset.id);
+                const category = await ipcRenderer.invoke('get-category', { type: 'income', id });
+                openEditBudgetModal('income', category);
+            });
+        });
+
+        // Input change handlers
+        incomeTableBody.querySelectorAll('.budget-input').forEach(input => {
+            input.addEventListener('change', async (e) => {
+                const targetEl = e.target;
+                const categoryId = targetEl.dataset.id;
+                const newTargetValue = num(targetEl.value);
+
+                const result = await ipcRenderer.invoke('update-budget-target', {
+                    type: 'income',
+                    categoryId,
+                    target: newTargetValue
+                });
+
+                if (result.success) {
+                    targetEl.style.borderColor = 'green';
+                    setTimeout(() => targetEl.style.borderColor = '', 800);
+                    notifyDataChanged();
+                } else {
+                    targetEl.style.borderColor = 'red';
+                }
+            });
+        });
+    }
+
+    await populateExpenseBudgetTable();
+    await populateIncomeBudgetTable();
 }
 
 // --- MODALS ---
@@ -508,6 +589,8 @@ function openEditCategoryModal(type, category) {
 }
 
 async function openEditTransactionModal(type, transaction) {
+    const isExpense = (type === 'expenses' || type === 'expense');
+
     const modal = document.getElementById(`edit-${type}-modal`);
     modal.style.display = 'flex';
     document.getElementById(`edit-${type}-id`).value = transaction.id;
@@ -515,7 +598,8 @@ async function openEditTransactionModal(type, transaction) {
     document.getElementById(`edit-${type}-amount`).value = transaction.amount;
     document.getElementById(`edit-${type}-notes`).value = transaction.notes || '';
     const categorySelect = document.getElementById(`edit-${type}-category`);
-    const categories = await ipcRenderer.invoke(type === 'expense' ? 'get-expense-categories' : 'get-income-categories');
+
+    const categories = await ipcRenderer.invoke(isExpense ? 'get-expense-categories' : 'get-income-categories');
     categorySelect.innerHTML = '';
     categories.forEach(cat => {
         const o = document.createElement('option');
@@ -526,8 +610,9 @@ async function openEditTransactionModal(type, transaction) {
         }
         categorySelect.appendChild(o);
     });
-    if (type === 'expense') {
-        document.getElementById('edit-expense-description').value = transaction.description;
+
+    if (isExpense) {
+        document.getElementById('edit-expenses-description').value = transaction.description;
     } else {
         document.getElementById('edit-income-source').value = transaction.source;
     }
@@ -542,8 +627,8 @@ async function openEditTransactionModal(type, transaction) {
             category_id: document.getElementById(`edit-${type}-category`).value,
             notes: document.getElementById(`edit-${type}-notes`).value,
         };
-        if (type === 'expense') {
-            data.description = document.getElementById('edit-expense-description').value;
+        if (isExpense) {
+            data.description = document.getElementById('edit-expenses-description').value;
         } else {
             data.source = document.getElementById('edit-income-source').value;
         }
