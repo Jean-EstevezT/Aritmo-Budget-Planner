@@ -39,20 +39,36 @@ body {
      box-sizing: border-box;
      display: flex;
      flex-direction: column;
+     flex-shrink: 0; /* Prevent sidebar from shrinking */
 }
 
 .content-wrapper {
      flex-grow: 1;
-     padding: 20px;
      height: 100vh;
-    overflow-y: auto; /* scroll only in content */
      box-sizing: border-box;
+     position: relative;
 }
 
-/* Hide pages by default */
-.page { display: none; }
-/* Show only the active page */
-.page.active { display: block; }
+/* Pages are stacked and visibility is toggled */
+.page {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 20px;
+    overflow-y: auto; /* Scroll within the page */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease-in-out;
+    display: block; /* Keep it as block to allow children to be sized correctly */
+}
+
+.page.active {
+    opacity: 1;
+    visibility: visible;
+}
+
 
 .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 
@@ -83,7 +99,7 @@ body {
 /* ---------------------------
     Dashboard / Cards / Charts
     --------------------------- */
-.dashboard-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
 .dashboard-column { display: flex; flex-direction: column; gap: 20px; }
 
 .card { background-color: var(--card-color); border-radius: 8px; padding: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
@@ -147,6 +163,20 @@ body {
 .category-list li { display: flex; justify-content: space-between; align-items: center; padding: 12px 5px; border-bottom: 1px solid var(--border-color); font-size: 14px; }
 .category-list li:last-child { border-bottom: none; }
 
+.edit-btn {
+    background: none;
+    border: none;
+    color: var(--gray-color);
+    cursor: pointer;
+    font-size: 20px;
+    padding: 5px;
+    transition: color 0.2s;
+}
+
+.edit-btn:hover {
+    color: var(--accent-blue);
+}
+
 .delete-btn { background: none; border: none; color: var(--gray-color); cursor: pointer; font-size: 20px; padding: 5px; transition: color 0.2s; }
 .delete-btn:hover { color: var(--accent-red); }
 
@@ -154,3 +184,88 @@ body {
 #about-form input, #about-form textarea { width: 100%; padding: 10px; margin-top: 6px; margin-bottom: 10px; background-color: #3a3d42; color: var(--font-color); border: 1px solid var(--gray-color); border-radius: 6px; }
 #about-save { background: var(--accent-blue); color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; }
 #about-preview { padding: 12px; background-color: #2b2e33; border-radius: 6px; }
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+    .dashboard-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+    .transaction-form {
+        grid-template-columns: 1fr; /* Stack form elements */
+    }
+}
+
+@media (max-width: 768px) {
+    .main-container {
+        flex-direction: column;
+    }
+    .sidebar {
+        width: 100%;
+        height: auto;
+        flex-direction: row;
+        justify-content: space-around;
+        padding: 10px;
+    }
+    .sidebar-header {
+        display: none; /* Hide header on small screens */
+    }
+    .sidebar ul {
+        display: flex;
+        gap: 10px;
+    }
+    .sidebar .nav-link {
+        padding: 10px;
+        margin-bottom: 0;
+    }
+    .sidebar .nav-link span:last-child {
+        display: none; /* Hide text labels on mobile */
+    }
+    .content-wrapper {
+        height: calc(100vh - 70px); /* Adjust height for sidebar */
+    }
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+    .settings-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Modal styles */
+.modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    display: none; /* Hidden by default */
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: var(--card-color);
+    padding: 20px;
+    border-radius: 8px;
+    width: 400px;
+    position: relative;
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.positive {
+    color: var(--accent-green);
+}
+
+.negative {
+    color: var(--accent-red);
+}

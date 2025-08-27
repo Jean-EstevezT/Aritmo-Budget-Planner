@@ -1,5 +1,16 @@
 const { ipcRenderer } = require('electron');
 const { Chart } = require('chart.js/auto');
+// Simple local icon renderer: ensures .icon elements are visible.
+function renderLocalIcons() {
+    document.querySelectorAll('.icon').forEach(el => {
+        // If element is empty or contains a class placeholder, keep existing text (emoji)
+        if (!el.textContent.trim()) {
+            el.textContent = '🔹';
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => renderLocalIcons());
 
 // Global error handlers to capture unhandled rejections and uncaught errors
 window.addEventListener('unhandledrejection', (event) => {
@@ -88,15 +99,15 @@ async function initDashboardPage() {
         renderPieChart('expensesPieChart', expensesByCategory, 'No expenses');
         renderPieChart('incomePieChart', incomeByCategory, 'No income');
         renderWaterfallChart(summary);
-        
+
     // Populate details tables
     populateDetailsTable('expense-details-body', expensesByCategory, monthCount);
     populateDetailsTable('income-details-body', incomeByCategory, monthCount);
-        
+
     // --- Expense Drill Down logic ---
         const drilldownSelect = document.getElementById('expense-drilldown-select');
         const allExpenseCategories = await ipcRenderer.invoke('get-expense-categories');
-        
+
         // Fill the drilldown select with expense categories using DocumentFragment
         drilldownSelect.innerHTML = '';
         const opt0 = document.createElement('option'); opt0.value = ''; opt0.textContent = 'Select an expense category';
@@ -109,7 +120,7 @@ async function initDashboardPage() {
             df.appendChild(o);
         });
         drilldownSelect.appendChild(df);
-        
+
     // Create an empty bar chart as a placeholder
     renderDrillDownChart();
 
@@ -247,7 +258,7 @@ async function initTransactionsPage(type) {
             const tr = document.createElement('tr');
             const desc = isExpenses ? item.description : item.source;
             // Add a delete button per row
-            tr.innerHTML = `<td>${item.date}</td><td>${desc}</td><td>$${item.amount.toFixed(2)}</td><td>${item.category_name}</td><td>${item.notes || ''}</td><td><button class="delete-transaction-btn" data-id="${item.id}" data-type="${type}">Delete</button></td>`;
+            tr.innerHTML = `<td>${item.date}</td><td>${desc}</td><td>$${item.amount.toFixed(2)}</td><td>${item.category_name}</td><td>${item.notes || ''}</td><td><button class="edit-transaction-btn" data-id="${item.id}" data-type="${type}"><span class="icon">✏️</span></button><button class="delete-transaction-btn" data-id="${item.id}" data-type="${type}"><span class="icon">🗑️</span></button></td>`;
             df2.appendChild(tr);
         });
         tableBody.appendChild(df2);
@@ -270,6 +281,16 @@ async function initTransactionsPage(type) {
                     console.error('Error deleting transaction:', err);
                     alert('Error deleting entry. See console.');
                 }
+            });
+        });
+
+        // Attach edit handlers for transaction rows
+        tableBody.querySelectorAll('.edit-transaction-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const id = btn.dataset.id;
+                const t = btn.dataset.type; // 'expenses' or 'income'
+                const item = await ipcRenderer.invoke('get-transaction', { type: t, id: Number(id) });
+                openEditTransactionModal(t, item);
             });
         });
     };
@@ -301,13 +322,23 @@ async function initSettingsPage() {
         const df = document.createDocumentFragment();
         cats.forEach(c => {
             const li = document.createElement('li'); li.dataset.id = c.id;
-            li.innerHTML = `<span>${c.name}</span><button class="delete-btn"><i class="ph-bold ph-trash"></i></button>`;
+            li.innerHTML = `<span>${c.name}</span><div><button class="edit-category-btn" data-id="${c.id}" data-type="expense"><span class="icon">✏️</span></button><button class="delete-btn" data-id="${c.id}"><span class="icon">🗑️</span></button></div>`;
             df.appendChild(li);
         });
         expenseList.appendChild(df);
     };
     expenseForm.onsubmit = async (e) => { e.preventDefault(); if (expenseInput.value.trim()) { await ipcRenderer.invoke('add-expense-category', expenseInput.value.trim()); expenseInput.value = ''; await loadExpenseCategories(); notifyDataChanged(); } };
-    expenseList.onclick = async (e) => { const btn = e.target.closest('.delete-btn'); if (btn) { const id = btn.parentElement.dataset.id; if (confirm("Are you sure?")) { await ipcRenderer.invoke('delete-expense-category', id); await loadExpenseCategories(); notifyDataChanged(); } } };
+    expenseList.onclick = async (e) => {
+        const delBtn = e.target.closest('.delete-btn');
+        if (delBtn) { const id = delBtn.parentElement.parentElement.dataset.id; if (confirm("Are you sure?")) { await ipcRenderer.invoke('delete-expense-category', id); await loadExpenseCategories(); notifyDataChanged(); } }
+        const editBtn = e.target.closest('.edit-category-btn');
+        if (editBtn) {
+            const id = editBtn.dataset.id;
+            const type = editBtn.dataset.type;
+            const category = await ipcRenderer.invoke('get-category', { type, id: Number(id) });
+            openEditCategoryModal(type, category);
+        }
+    };
 
     // Logic for INCOME
     const incomeForm = document.getElementById('settings-income-form');
@@ -319,14 +350,24 @@ async function initSettingsPage() {
         const df = document.createDocumentFragment();
         cats.forEach(c => {
             const li = document.createElement('li'); li.dataset.id = c.id;
-            li.innerHTML = `<span>${c.name}</span><button class="delete-btn"><i class="ph-bold ph-trash"></i></button>`;
+            li.innerHTML = `<span>${c.name}</span><div><button class="edit-category-btn" data-id="${c.id}" data-type="income"><span class="icon">✏️</span></button><button class="delete-btn" data-id="${c.id}"><span class="icon">🗑️</span></button></div>`;
             df.appendChild(li);
         });
         incomeList.appendChild(df);
     };
     incomeForm.onsubmit = async (e) => { e.preventDefault(); if (incomeInput.value.trim()) { await ipcRenderer.invoke('add-income-category', incomeInput.value.trim()); incomeInput.value = ''; await loadIncomeCategories(); notifyDataChanged(); } };
-    incomeList.onclick = async (e) => { const btn = e.target.closest('.delete-btn'); if (btn) { const id = btn.parentElement.dataset.id; if (confirm("Are you sure?")) { await ipcRenderer.invoke('delete-income-category', id); await loadIncomeCategories(); notifyDataChanged(); } } };
-    
+    incomeList.onclick = async (e) => {
+        const delBtn = e.target.closest('.delete-btn');
+        if (delBtn) { const id = delBtn.parentElement.parentElement.dataset.id; if (confirm("Are you sure?")) { await ipcRenderer.invoke('delete-income-category', id); await loadIncomeCategories(); notifyDataChanged(); } }
+        const editBtn = e.target.closest('.edit-category-btn');
+        if (editBtn) {
+            const id = editBtn.dataset.id;
+            const type = editBtn.dataset.type;
+            const category = await ipcRenderer.invoke('get-category', { type, id: Number(id) });
+            openEditCategoryModal(type, category);
+        }
+    };
+
     await loadExpenseCategories();
     await loadIncomeCategories();
 
@@ -353,7 +394,7 @@ async function initSettingsPage() {
     }
 }
 
-// --- OBJETIVOS DE PRESUPUESTO ---
+// --- BUDGETS ---
 async function initBudgetsPage() {
     const expenseTableBody = document.getElementById('expense-budgets-table').querySelector('tbody');
     const incomeTableBody = document.getElementById('income-budgets-table').querySelector('tbody');
@@ -362,23 +403,26 @@ async function initBudgetsPage() {
     async function populateBudgetTable(type, tableBody) {
         const isExpense = type === 'expense';
         const categories = await ipcRenderer.invoke(isExpense ? 'get-expense-categories' : 'get-income-categories');
-        
+
         tableBody.innerHTML = '';
         categories.forEach(cat => {
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${cat.name}</td>
                 <td>
-                    <input 
-                        type="number" 
-                        class="budget-input" 
-                        value="${cat.budget_target || 0}" 
-                        data-id="${cat.id}" 
+                    <input
+                        type="number"
+                        class="budget-input"
+                        value="${cat.budget_target || 0}"
+                        data-id="${cat.id}"
                         data-type="${type}"
-                        step="10" 
+                        step="10"
                         placeholder="0.00">
                 </td>
-                <td><button class="delete-budget-btn" data-id="${cat.id}" data-type="${type}">Delete</button></td>
+                <td>
+                    <button class="edit-budget-btn" data-id="${cat.id}" data-type="${type}"><span class="icon">✏️</span></button>
+                    <button class="delete-budget-btn" data-id="${cat.id}" data-type="${type}"><span class="icon">🗑️</span></button>
+                </td>
             `;
             tableBody.appendChild(row);
         });
@@ -403,6 +447,16 @@ async function initBudgetsPage() {
                 }
             });
         });
+
+        // Attach edit handlers for budget rows
+        tableBody.querySelectorAll('.edit-budget-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const id = btn.dataset.id;
+                const type = btn.dataset.type;
+                const category = await ipcRenderer.invoke('get-category', { type, id: Number(id) });
+                openEditBudgetModal(type, category);
+            });
+        });
     }
 
     // Load tables
@@ -424,7 +478,7 @@ async function initBudgetsPage() {
             });
 
             if (result.success) {
-                target.style.borderColor = 'green'; 
+                target.style.borderColor = 'green';
                 setTimeout(() => target.style.borderColor = '', 1000);
             } else {
                 target.style.borderColor = 'red';
@@ -432,6 +486,97 @@ async function initBudgetsPage() {
         });
     });
 }
+
+// --- MODALS ---
+function openEditCategoryModal(type, category) {
+    const modal = document.getElementById('edit-category-modal');
+    modal.style.display = 'flex';
+    document.getElementById('edit-category-id').value = category.id;
+    document.getElementById('edit-category-name').value = category.name;
+    const form = document.getElementById('edit-category-form');
+    form.onsubmit = async (e) => {
+        e.preventDefault();
+        const newName = document.getElementById('edit-category-name').value.trim();
+        if (newName) {
+            await ipcRenderer.invoke('update-category', { type, id: category.id, name: newName });
+            modal.style.display = 'none';
+            initSettingsPage();
+            notifyDataChanged();
+        }
+    };
+    modal.querySelector('.close-btn').onclick = () => modal.style.display = 'none';
+}
+
+async function openEditTransactionModal(type, transaction) {
+    const modal = document.getElementById(`edit-${type}-modal`);
+    modal.style.display = 'flex';
+    document.getElementById(`edit-${type}-id`).value = transaction.id;
+    document.getElementById(`edit-${type}-date`).value = transaction.date;
+    document.getElementById(`edit-${type}-amount`).value = transaction.amount;
+    document.getElementById(`edit-${type}-notes`).value = transaction.notes || '';
+    const categorySelect = document.getElementById(`edit-${type}-category`);
+    const categories = await ipcRenderer.invoke(type === 'expense' ? 'get-expense-categories' : 'get-income-categories');
+    categorySelect.innerHTML = '';
+    categories.forEach(cat => {
+        const o = document.createElement('option');
+        o.value = cat.id;
+        o.textContent = cat.name;
+        if (cat.id === transaction.category_id) {
+            o.selected = true;
+        }
+        categorySelect.appendChild(o);
+    });
+    if (type === 'expense') {
+        document.getElementById('edit-expense-description').value = transaction.description;
+    } else {
+        document.getElementById('edit-income-source').value = transaction.source;
+    }
+
+    const form = document.getElementById(`edit-${type}-form`);
+    form.onsubmit = async (e) => {
+        e.preventDefault();
+        const data = {
+            id: transaction.id,
+            date: document.getElementById(`edit-${type}-date`).value,
+            amount: parseFloat(document.getElementById(`edit-${type}-amount`).value) || 0,
+            category_id: document.getElementById(`edit-${type}-category`).value,
+            notes: document.getElementById(`edit-${type}-notes`).value,
+        };
+        if (type === 'expense') {
+            data.description = document.getElementById('edit-expense-description').value;
+        } else {
+            data.source = document.getElementById('edit-income-source').value;
+        }
+        await ipcRenderer.invoke('update-transaction', { type, ...data });
+        modal.style.display = 'none';
+        initTransactionsPage(type);
+        notifyDataChanged();
+    };
+    modal.querySelector('.close-btn').onclick = () => modal.style.display = 'none';
+}
+
+function openEditBudgetModal(type, category) {
+    const modal = document.getElementById('edit-budget-modal');
+    modal.style.display = 'flex';
+    document.getElementById('edit-budget-id').value = category.id;
+    document.getElementById('edit-budget-category').value = category.name;
+    document.getElementById('edit-budget-amount').value = category.budget_target || 0;
+    const form = document.getElementById('edit-budget-form');
+    form.onsubmit = async (e) => {
+        e.preventDefault();
+        const newTargetValue = parseFloat(document.getElementById('edit-budget-amount').value) || 0;
+        await ipcRenderer.invoke('update-budget-target', {
+            type: type,
+            categoryId: category.id,
+            target: newTargetValue
+        });
+        modal.style.display = 'none';
+        initBudgetsPage();
+        notifyDataChanged();
+    };
+    modal.querySelector('.close-btn').onclick = () => modal.style.display = 'none';
+}
+
 
 // --- ABOUT PAGE ---
 function renderAboutPreview(data) {

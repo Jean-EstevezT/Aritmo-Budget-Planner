@@ -1,6 +1,6 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
-const { setupDatabase, knex } = require('./database');
+const { setupDatabase, knex, insertDefaultExpenseCategories, insertDefaultIncomeCategories } = require('./database');
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -96,6 +96,79 @@ ipcMain.handle('delete-transaction', async (_, { type, id }) => {
     }
 });
 
+ipcMain.handle('get-transaction', async (_, { type, id }) => {
+    const table = type === 'expenses' ? 'expenses' : 'income';
+    return knex(table).where({ id }).first();
+});
+
+ipcMain.handle('update-transaction', async (_, { type, id, ...data }) => {
+    const table = type === 'expenses' ? 'expenses' : 'income';
+    return knex(table).where({ id }).update(data);
+});
+
+ipcMain.handle('get-category', async (_, { type, id }) => {
+    const table = type === 'expense' ? 'expense_categories' : 'income_categories';
+    return knex(table).where({ id }).first();
+});
+
+ipcMain.handle('update-category', async (_, { type, id, name }) => {
+    const table = type === 'expense' ? 'expense_categories' : 'income_categories';
+    return knex(table).where({ id }).update({ name });
+});
+
+ipcMain.handle('get-expense-budget-data', async () => {
+    try {
+        const categories = await knex('expense_categories').select('*');
+        const categoryIds = categories.map(c => c.id);
+
+        const expenses = await knex('expenses')
+            .select('category_id', 'amount', 'date')
+            .whereIn('category_id', categoryIds);
+
+        const dateRange = await knex.raw(`
+            SELECT
+                MIN(date) as minDate,
+                MAX(date) as maxDate
+            FROM expenses
+        `);
+
+        let monthCount = 1;
+        if (dateRange[0] && dateRange[0].minDate && dateRange[0].maxDate) {
+            const min = new Date(dateRange[0].minDate);
+            const max = new Date(dateRange[0].maxDate);
+            monthCount = (max.getFullYear() - min.getFullYear()) * 12 + (max.getMonth() - min.getMonth()) + 1;
+        }
+
+        const threeMonthsAgo = new Date();
+        threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+        const threeMonthsAgoStr = threeMonthsAgo.toISOString().split('T')[0];
+
+        const results = categories.map(category => {
+            const categoryExpenses = expenses.filter(e => e.category_id === category.id);
+            const totalSpent = categoryExpenses.reduce((acc, e) => acc + e.amount, 0);
+            const monthly_avg = totalSpent / monthCount;
+            const three_month_total = categoryExpenses
+                .filter(e => new Date(e.date) >= threeMonthsAgo)
+                .reduce((acc, e) => acc + e.amount, 0);
+            const est_annual_spending = monthly_avg * 12;
+            const difference = category.budget_target - monthly_avg;
+
+            return {
+                ...category,
+                monthly_avg,
+                three_month_total,
+                est_annual_spending,
+                difference,
+            };
+        });
+
+        return results;
+    } catch (error) {
+        console.error('Error fetching expense budget data:', error);
+        return [];
+    }
+});
+
 
 // -- Single request that returns all dashboard data --
 ipcMain.handle('get-dashboard-data', async () => {
@@ -103,16 +176,16 @@ ipcMain.handle('get-dashboard-data', async () => {
     try {
     // Calculate date range to determine the number of months
         const dateRange = await knex.raw(`
-            SELECT 
-                MIN(transaction_date) as minDate, 
-                MAX(transaction_date) as maxDate 
+            SELECT
+                MIN(transaction_date) as minDate,
+                MAX(transaction_date) as maxDate
             FROM (
                 SELECT date as transaction_date FROM income
                 UNION ALL
                 SELECT date as transaction_date FROM expenses
             )
         `);
-        
+
         let monthCount = 1;
         if (dateRange[0] && dateRange[0].minDate && dateRange[0].maxDate) {
             const min = new Date(dateRange[0].minDate);
@@ -122,7 +195,7 @@ ipcMain.handle('get-dashboard-data', async () => {
 
         const incomeResult = await knex('income').sum('amount as total').first();
         const expenseResult = await knex('expenses').sum('amount as total').first();
-        
+
         const totalIncome = Number(incomeResult.total) || 0;
         const totalExpenses = Number(expenseResult.total) || 0;
 
@@ -135,7 +208,7 @@ ipcMain.handle('get-dashboard-data', async () => {
 
         const expensesByCategory = await knex('expenses').join('expense_categories', 'expenses.category_id', 'expense_categories.id').select('expense_categories.name').groupBy('name').sum('amount as total').orderBy('total', 'desc');
         const incomeByCategory = await knex('income').join('income_categories', 'income.category_id', 'income_categories.id').select('income_categories.name').groupBy('name').sum('amount as total').orderBy('total', 'desc');
-        
+
         return { summary, expensesByCategory, incomeByCategory };
     } catch (error) {
         console.error('[Backend] Error fetching dashboard data:', error);
@@ -170,6 +243,9 @@ ipcMain.handle('clear-database', async () => {
 
         // Run VACUUM to clean up the SQLite file
         await knex.raw('VACUUM');
+
+        await insertDefaultExpenseCategories();
+        await insertDefaultIncomeCategories();
 
         return { success: true };
     } catch (err) {

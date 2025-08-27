@@ -1,28 +1,30 @@
+<!--
+Note: This file is now a template for the UI.
+Functionality for editing and deleting items will be handled in renderer.js
+-->
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
-    <!-- Strict Content Security Policy: allow only local resources and the icon CDN, disallow eval -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
-    <title>aritmo</title>
+    <!-- Content Security Policy: allow only local scripts/styles and inline styles -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
+    <title>Aritmo</title>
     <link rel="stylesheet" href="./style.css">
-    <!-- Load Phosphor Icons from unpkg so <i class="ph-..."> icons render -->
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body>
 
     <div class="main-container">
         <nav class="sidebar">
             <div class="sidebar-header">
-                <h3>aritmo</h3>
+                <h3>Aritmo</h3>
             </div>
             <ul>
-                <li><a href="#" class="nav-link active" data-page="dashboard"><i class="ph-bold ph-chart-pie-slice"></i><span>Dashboard</span></a></li>
-                <li><a href="#" class="nav-link" data-page="expenses"><i class="ph-bold ph-receipt"></i><span>Expenses</span></a></li>
-                <li><a href="#" class="nav-link" data-page="income"><i class="ph-bold ph-money"></i><span>Income</span></a></li>
-                <li><a href="#" class="nav-link" data-page="budgets"><i class="ph-bold ph-target"></i><span>Budgets</span></a></li>
-                        <li><a href="#" class="nav-link" data-page="settings"><i class="ph-bold ph-gear"></i><span>Settings</span></a></li>
-                        <li><a href="#" class="nav-link" data-page="about"><i class="ph-bold ph-info"></i><span>About</span></a></li>
+        <li><a href="#" class="nav-link active" data-page="dashboard"><span class="icon">📊</span><span>Dashboard</span></a></li>
+        <li><a href="#" class="nav-link" data-page="expenses"><span class="icon">🧾</span><span>Expenses</span></a></li>
+        <li><a href="#" class="nav-link" data-page="income"><span class="icon">💵</span><span>Income</span></a></li>
+        <li><a href="#" class="nav-link" data-page="budgets"><span class="icon">🎯</span><span>Budgets</span></a></li>
+            <li><a href="#" class="nav-link" data-page="settings"><span class="icon">⚙️</span><span>Settings</span></a></li>
+            <li><a href="#" class="nav-link" data-page="about"><span class="icon">ℹ️</span><span>About</span></a></li>
             </ul>
         </nav>
 
@@ -32,7 +34,14 @@
                     <h1>Dashboard</h1>
                     <div class="time-period-selector">
                         <label for="time-period">Time period:</label>
-                        <select id="time-period"><option>All Data</option></select>
+                        <select id="time-period">
+                            <option value="all">All Data</option>
+                            <option value="7">Last 7 days</option>
+                            <option value="15">Last 15 days</option>
+                            <option value="30">Last 30 days</option>
+                            <option value="90">Last 3 months</option>
+                            <option value="365">Last year</option>
+                        </select>
                     </div>
                 </header>
                 <main class="dashboard-grid">
@@ -46,15 +55,15 @@
                                 <div><span>Total Savings</span><p id="summary-savings">$0.00</p></div>
                             </div>
                         </div>
-                        <div class="card">
-                            <h2>Cash Flow</h2>
-                            <div class="chart-container" style="height: 250px;"><canvas id="waterfallChart"></canvas></div>
-                        </div>
                         <div class="card monthly-summary-card">
                             <h2>Monthly Averages</h2>
                             <div><span>Income</span><p id="monthly-avg-income">$0.00</p></div>
                             <div><span>Expenses</span><p id="monthly-avg-expenses">$0.00</p></div>
                             <div><span>Savings</span><p id="monthly-avg-savings">$0.00</p></div>
+                        </div>
+                        <div class="card">
+                            <h2>Cash Flow</h2>
+                            <div class="chart-container" style="height: 250px;"><canvas id="waterfallChart"></canvas></div>
                         </div>
                     </div>
 
@@ -69,6 +78,18 @@
                                 <tbody id="expense-details-body"></tbody>
                             </table>
                         </div>
+                        <div class="card full-height-card">
+                            <h2>Expense Drill Down</h2>
+                            <select id="expense-drilldown-select">
+                                <option value="">Select an expense category</option>
+                            </select>
+                            <div class="chart-container" style="margin-top: 20px;">
+                                <canvas id="drillDownChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-column">
                         <div class="card">
                             <h2>Income by Category</h2>
                             <div class="chart-container" style="height: 200px; margin-bottom: 20px;"><canvas id="incomePieChart"></canvas></div>
@@ -78,18 +99,6 @@
                                 </thead>
                                 <tbody id="income-details-body"></tbody>
                             </table>
-                        </div>
-                    </div>
-
-                    <div class="dashboard-column">
-                        <div class="card full-height-card">
-                            <h2>Expense Drill Down</h2>
-                            <select id="expense-drilldown-select">
-                                <option value="">Select an expense category</option>
-                            </select>
-                            <div class="chart-container" style="margin-top: 20px;">
-                                <canvas id="drillDownChart"></canvas>
-                            </div>
                         </div>
                     </div>
 
@@ -107,14 +116,26 @@
                             <input type="number" name="amount" placeholder="$ Amount" step="0.01" required>
                             <select name="category_id" required><option>Select Category</option></select>
                             <input type="text" name="notes" placeholder="Notes (Optional)">
-                            <button type="submit">Add Expense</button>
+                            <button type="submit"><span class="icon">➕</span> Add Expense</button>
                         </form>
                     </div>
                     <div class="card">
                         <h2>Recent Expenses</h2>
                         <table id="expenses-table" class="data-table">
-                            <thead><tr><th>Date</th><th>Store / Vendor</th><th>Amount</th><th>Category</th><th>Notes</th></tr></thead>
-                            <tbody></tbody>
+                            <thead><tr><th>Date</th><th>Store / Vendor</th><th>Amount</th><th>Category</th><th>Notes</th><th>Actions</th></tr></thead>
+                            <tbody>
+                                <tr style="display:none;" class="transaction-row-template">
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td>
+                                        <button class="edit-btn" title="Edit">✏️</button>
+                                        <button class="delete-btn" title="Delete">🗑️</button>
+                                    </td>
+                                </tr>
+                            </tbody>
                         </table>
                     </div>
                 </main>
@@ -131,14 +152,26 @@
                             <input type="number" name="amount" placeholder="$ Amount" step="0.01" required>
                             <select name="category_id" required><option>Select Category</option></select>
                             <input type="text" name="notes" placeholder="Notes (Optional)">
-                            <button type="submit">Add Income</button>
+                            <button type="submit"><span class="icon">➕</span> Add Income</button>
                         </form>
                     </div>
                     <div class="card">
                         <h2>Recent Income</h2>
                         <table id="income-table" class="data-table">
-                            <thead><tr><th>Date</th><th>Source</th><th>Amount</th><th>Category</th><th>Notes</th></tr></thead>
-                            <tbody></tbody>
+                            <thead><tr><th>Date</th><th>Source</th><th>Amount</th><th>Category</th><th>Notes</th><th>Actions</th></tr></thead>
+                            <tbody>
+                                <tr style="display:none;" class="transaction-row-template">
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td>
+                                        <button class="edit-btn" title="Edit">✏️</button>
+                                        <button class="delete-btn" title="Delete">🗑️</button>
+                                    </td>
+                                </tr>
+                            </tbody>
                         </table>
                     </div>
                 </main>
@@ -152,23 +185,41 @@
                             <h2>Expense Categories</h2>
                             <form id="settings-expense-form" class="category-form">
                                 <input type="text" placeholder="New expense category...">
-                                <button type="submit">Add</button>
+                                <button type="submit"><span class="icon">➕</span> Add</button>
                             </form>
-                            <ul id="settings-expense-list" class="category-list"></ul>
+                            <ul id="settings-expense-list" class="category-list">
+                                <!-- Template for category list items -->
+                                <li style="display:none;" class="category-item-template">
+                                    <span>Category Name</span>
+                                    <div>
+                                        <button class="edit-btn" title="Edit">✏️</button>
+                                        <button class="delete-btn" title="Delete">🗑️</button>
+                                    </div>
+                                </li>
+                            </ul>
                         </div>
 
                         <div class="card">
                             <h2>Income Categories</h2>
                             <form id="settings-income-form" class="category-form">
                                 <input type="text" placeholder="New income category...">
-                                <button type="submit">Add</button>
+                                <button type="submit"><span class="icon">➕</span> Add</button>
                             </form>
-                            <ul id="settings-income-list" class="category-list"></ul>
+                            <ul id="settings-income-list" class="category-list">
+                                <!-- Template for category list items -->
+                                <li style="display:none;" class="category-item-template">
+                                    <span>Category Name</span>
+                                    <div>
+                                        <button class="edit-btn" title="Edit">✏️</button>
+                                        <button class="delete-btn" title="Delete">🗑️</button>
+                                    </div>
+                                </li>
+                            </ul>
                         </div>
                         <div class="card">
                             <h2>Danger Zone</h2>
                             <p style="color:var(--gray-color); font-size:13px;">Delete all data in the local database. This action is irreversible.</p>
-                            <button id="clear-db-btn" style="background:#dc3545;color:white;border:none;padding:10px 12px;border-radius:6px;cursor:pointer;">Clear entire database</button>
+                            <button id="clear-db-btn" style="background:#dc3545;color:white;border:none;padding:10px 12px;border-radius:6px;cursor:pointer;"><span class="icon">🗑️</span> Clear entire database</button>
                         </div>
                     </div>
                 </main>
@@ -178,20 +229,25 @@
                 <header class="header"><h1>About</h1></header>
                 <main>
                     <div class="card">
-                        <h2>About / Author</h2>
-                        <form id="about-form">
-                            <label for="about-name">Jean Estevez</label>
-                            <input id="about-name" type="text" placeholder="Your name">
-                            <label for="about-email">ctarriba@gmail.com</label>
-                            <input id="about-email" type="email" placeholder="you@example.com">
-                            <label for="about-bio">Short bio</label>
-                            <textarea id="about-bio" rows="4" placeholder="A short description about you..."></textarea>
-                            <div style="margin-top:10px;"><button id="about-save" type="button">Save</button></div>
-                        </form>
+                        <h2>Aritmo</h2>
+                        <p>Version 1.0.0</p>
+                        <p>A lightweight Electron-based budget planner and dashboard.</p>
                     </div>
                     <div class="card">
-                        <h2>Preview</h2>
-                        <div id="about-preview" style="white-space:pre-wrap;color:var(--gray-color);"></div>
+                        <h2>Author</h2>
+                        <p>Jean Estevez</p>
+                        <p><a href="mailto:ctarriba@gmail.com">ctarriba@gmail.com</a></p>
+                    </div>
+                    <div class="card">
+                        <h2>License</h2>
+                        <p>GNU General Public License v3.0</p>
+                        <pre style="white-space: pre-wrap; font-size: 0.8em; color: var(--gray-color); max-height: 150px; overflow-y: auto; border: 1px solid var(--border-color); padding: 10px; border-radius: 6px;">                    GNU GENERAL PUBLIC LICENSE
+                       Version 3, 29 June 2007
+
+ Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
+ Everyone is permitted to copy and distribute verbatim copies
+ of this license document, but changing it is not allowed.
+                        </pre>
                     </div>
                 </main>
             </section>
@@ -204,11 +260,27 @@
                             <thead>
                                 <tr>
                                     <th>Category</th>
-                                    <th style="width: 150px;">Monthly Target</th>
+                                    <th style="width: 150px;">Budget Target</th>
+                                    <th style="width: 150px;">Actual Monthly Avg.</th>
+                                    <th style="width: 150px;">Actual 3-Month Total</th>
+                                    <th style="width: 150px;">Est. Annual Spending</th>
+                                    <th style="width: 150px;">Difference</th>
+                                    <th style="width: 100px;">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                </tbody>
+                                <tr style="display:none;" class="budget-row-template">
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td>
+                                        <button class="edit-btn" title="Edit">✏️</button>
+                                    </td>
+                                </tr>
+                            </tbody>
                         </table>
                     </div>
                     <div class="card">
@@ -218,16 +290,82 @@
                                 <tr>
                                     <th>Category</th>
                                     <th style="width: 150px;">Monthly Target</th>
+                                    <th style="width: 100px;">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                </tbody>
+                                <tr style="display:none;" class="budget-row-template">
+                                    <td></td>
+                                    <td></td>
+                                    <td>
+                                        <button class="edit-btn" title="Edit">✏️</button>
+                                    </td>
+                                </tr>
+                            </tbody>
                         </table>
                     </div>
                 </main>
             </section>
         </div>
     </div>
+    <!-- Modals for editing -->
+    <div id="edit-category-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Edit Category</h2>
+            <form id="edit-category-form">
+                <input type="hidden" id="edit-category-id">
+                <input type="text" id="edit-category-name" required>
+                <button type="submit">Save</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="edit-expenses-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Edit Expense</h2>
+            <form id="edit-expenses-form">
+                <input type="hidden" id="edit-expenses-id">
+                <input type="date" id="edit-expenses-date" required>
+                <input type="text" id="edit-expenses-description" placeholder="Store / Vendor" required>
+                <input type="number" id="edit-expenses-amount" placeholder="$ Amount" step="0.01" required>
+                <select id="edit-expenses-category" required></select>
+                <input type="text" id="edit-expenses-notes" placeholder="Notes (Optional)">
+                <button type="submit">Save</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="edit-income-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Edit Income</h2>
+            <form id="edit-income-form">
+                <input type="hidden" id="edit-income-id">
+                <input type="date" id="edit-income-date" required>
+                <input type="text" id="edit-income-source" placeholder="Source" required>
+                <input type="number" id="edit-income-amount" placeholder="$ Amount" step="0.01" required>
+                <select id="edit-income-category" required></select>
+                <input type="text" id="edit-income-notes" placeholder="Notes (Optional)">
+                <button type="submit">Save</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="edit-budget-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Edit Budget</h2>
+            <form id="edit-budget-form">
+                <input type="hidden" id="edit-budget-id">
+                <input type="text" id="edit-budget-category" disabled>
+                <input type="number" id="edit-budget-amount" placeholder="$ Amount" step="0.01" required>
+                <button type="submit">Save</button>
+            </form>
+        </div>
+    </div>
+
     <script src="./renderer.js"></script>
     
 </body>
