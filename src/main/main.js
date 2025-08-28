@@ -228,6 +228,58 @@ ipcMain.handle('get-expense-budget-data', async () => {
         return [];
     }
 });
+ipcMain.handle('get-income-budget-data', async () => {
+    try {
+        const categories = await knex('income_categories').select('*');
+        const categoryIds = categories.map(c => c.id);
+
+        const incomes = await knex('income')
+            .select('category_id', 'amount', 'date')
+            .whereIn('category_id', categoryIds);
+
+        const dateRange = await knex.raw(`
+            SELECT
+                MIN(date) as minDate,
+                MAX(date) as maxDate
+            FROM income
+        `);
+
+        let monthCount = 1;
+        if (dateRange[0] && dateRange[0].minDate && dateRange[0].maxDate) {
+            const min = new Date(dateRange[0].minDate);
+            const max = new Date(dateRange[0].maxDate);
+            monthCount = (max.getFullYear() - min.getFullYear()) * 12 + (max.getMonth() - min.getMonth()) + 1;
+        }
+
+        const threeMonthsAgo = new Date();
+        threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+        const threeMonthsAgoStr = threeMonthsAgo.toISOString().split('T')[0];
+
+        const results = categories.map(category => {
+            const categoryIncomes = incomes.filter(e => e.category_id === category.id);
+            const totalSpent = categoryIncomes.reduce((acc, e) => acc + e.amount, 0);
+            const monthly_avg = totalSpent / monthCount;
+            const three_month_total = categoryIncomes
+                .filter(e => new Date(e.date) >= threeMonthsAgo)
+                .reduce((acc, e) => acc + e.amount, 0);
+            const est_annual_spending = monthly_avg * 12;
+            const difference = monthly_avg - category.budget_target;
+
+            return {
+                ...category,
+                monthly_avg,
+                three_month_total,
+                est_annual_spending,
+                difference,
+            };
+        });
+
+        return results;
+    } catch (error) {
+        console.error('Error fetching income budget data:', error);
+        return [];
+    }
+});
 
 
 // -- Single request that returns all dashboard data --
@@ -268,19 +320,19 @@ ipcMain.handle('get-dashboard-data', async () => {
 
         const expensesByCategoryRaw = await knex('expenses')
             .join('expense_categories', 'expenses.category_id', 'expense_categories.id')
-            .select('expense_categories.name')
-            .groupBy('name')
+            .select('expense_categories.id', 'expense_categories.name', 'expense_categories.budget_target')
+            .groupBy('expense_categories.id')
             .sum('amount as total')
             .orderBy('total', 'desc');
         const incomeByCategoryRaw = await knex('income')
             .join('income_categories', 'income.category_id', 'income_categories.id')
-            .select('income_categories.name')
-            .groupBy('name')
+            .select('income_categories.id', 'income_categories.name', 'income_categories.budget_target')
+            .groupBy('income_categories.id')
             .sum('amount as total')
             .orderBy('total', 'desc');
 
-        const expensesByCategory = expensesByCategoryRaw.map(r => ({ name: r.name, total: toNumber(r.total) }));
-        const incomeByCategory = incomeByCategoryRaw.map(r => ({ name: r.name, total: toNumber(r.total) }));
+        const expensesByCategory = expensesByCategoryRaw.map(r => ({ id: r.id, name: r.name, total: toNumber(r.total), budget_target: toNumber(r.budget_target) }));
+        const incomeByCategory = incomeByCategoryRaw.map(r => ({ id: r.id, name: r.name, total: toNumber(r.total), budget_target: toNumber(r.budget_target) }));
 
         return { summary, expensesByCategory, incomeByCategory };
     } catch (error) {

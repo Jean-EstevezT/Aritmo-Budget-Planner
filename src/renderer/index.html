@@ -73,7 +73,7 @@ Functionality for editing and deleting items will be handled in renderer.js
                             <div class="chart-container" style="height: 200px; margin-bottom: 20px;"><canvas id="expensesPieChart"></canvas></div>
                             <table class="details-table">
                                 <thead>
-                                    <tr><th>Category</th><th>Total</th><th>Monthly Avg.</th></tr>
+                                    <tr><th>Category</th><th>Total</th><th>Monthly Avg.</th><th>Budget Target</th><th>Difference</th></tr>
                                 </thead>
                                 <tbody id="expense-details-body"></tbody>
                             </table>
@@ -95,7 +95,7 @@ Functionality for editing and deleting items will be handled in renderer.js
                             <div class="chart-container" style="height: 200px; margin-bottom: 20px;"><canvas id="incomePieChart"></canvas></div>
                             <table class="details-table">
                                 <thead>
-                                    <tr><th>Category</th><th>Total</th><th>Monthly Avg.</th></tr>
+                                    <tr><th>Category</th><th>Total</th><th>Monthly Avg.</th><th>Budget Target</th><th>Difference</th></tr>
                                 </thead>
                                 <tbody id="income-details-body"></tbody>
                             </table>
@@ -254,55 +254,68 @@ Functionality for editing and deleting items will be handled in renderer.js
 
             <section id="budgets" class="page">
                 <header class="header"><h1>Budget Targets</h1></header>
-                <main class="settings-grid"> <div class="card">
+                <main class="settings-grid">
+                    <div class="card">
                         <h2>Expense Budget Targets</h2>
-                        <table class="details-table" id="expense-budgets-table">
-                            <thead>
-                                <tr>
-                                    <th>Category</th>
-                                    <th style="width: 150px;">Budget Target</th>
-                                    <th style="width: 150px;">Actual Monthly Avg.</th>
-                                    <th style="width: 150px;">Actual 3-Month Total</th>
-                                    <th style="width: 150px;">Est. Annual Spending</th>
-                                    <th style="width: 150px;">Difference</th>
-                                    <th style="width: 100px;">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr style="display:none;" class="budget-row-template">
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td>
-                                        <button class="edit-btn" title="Edit">✏️</button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <div class="budget-table-container">
+                            <table class="details-table" id="expense-budgets-table">
+                                <thead>
+                                    <tr>
+                                        <th>Category</th>
+                                        <th>Budget Target</th>
+                                        <th>Actual Monthly Avg.</th>
+                                        <th>Actual 3-Month Total</th>
+                                        <th>Est. Annual Spending</th>
+                                        <th>Difference</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr style="display:none;" class="budget-row-template">
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td>
+                                            <button class="edit-btn" title="Edit">✏️</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                     <div class="card">
                         <h2>Income Budget Targets</h2>
-                        <table class="details-table" id="income-budgets-table">
-                            <thead>
-                                <tr>
-                                    <th>Category</th>
-                                    <th style="width: 150px;">Monthly Target</th>
-                                    <th style="width: 100px;">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr style="display:none;" class="budget-row-template">
-                                    <td></td>
-                                    <td></td>
-                                    <td>
-                                        <button class="edit-btn" title="Edit">✏️</button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <div class="budget-table-container">
+                            <table class="details-table" id="income-budgets-table">
+                                <thead>
+                                    <tr>
+                                        <th>Category</th>
+                                        <th>Budget Target</th>
+                                        <th>Actual Monthly Avg.</th>
+                                        <th>Actual 3-Month Total</th>
+                                        <th>Est. Annual Income</th>
+                                        <th>Difference</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr style="display:none;" class="budget-row-template">
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td>
+                                            <button class="edit-btn" title="Edit">✏️</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </main>
             </section>

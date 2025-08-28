@@ -95,7 +95,7 @@ async function initDashboardPage() {
         const { summary, expensesByCategory, incomeByCategory } = data;
         const monthCount = summary.monthCount > 0 ? summary.monthCount : 1;
 
-        // Actualizar todas las tarjetas de resumen
+        // update cards in dashboard
         document.getElementById('summary-income').textContent = money(summary.totalIncome);
         document.getElementById('summary-expenses').textContent = money(summary.totalExpenses);
         document.getElementById('summary-savings').textContent = money(summary.totalSavings);
@@ -109,8 +109,8 @@ async function initDashboardPage() {
         renderWaterfallChart(summary);
 
     // Populate details tables
-    populateDetailsTable('expense-details-body', expensesByCategory, monthCount);
-    populateDetailsTable('income-details-body', incomeByCategory, monthCount);
+    populateDetailsTable('expense-details-body', expensesByCategory, monthCount, true);
+    populateDetailsTable('income-details-body', incomeByCategory, monthCount, false);
 
     // --- Expense Drill Down logic ---
         const drilldownSelect = document.getElementById('expense-drilldown-select');
@@ -153,7 +153,7 @@ async function initDashboardPage() {
 
 
 // populate details tables safely using DocumentFragment
-function populateDetailsTable(bodyId, data, monthCount) {
+function populateDetailsTable(bodyId, data, monthCount, isExpense) {
     const tableBody = document.getElementById(bodyId);
     if (!tableBody) return;
     tableBody.innerHTML = '';
@@ -161,16 +161,20 @@ function populateDetailsTable(bodyId, data, monthCount) {
         const df = document.createDocumentFragment();
         data.forEach(item => {
             const tr = document.createElement('tr');
+            const monthlyAvg = item.total / monthCount;
+            const difference = isExpense ? (item.budget_target - monthlyAvg) : (monthlyAvg - item.budget_target);
             const tdName = document.createElement('td'); tdName.textContent = item.name;
             const tdTotal = document.createElement('td'); tdTotal.textContent = money(item.total);
-            const tdAvg = document.createElement('td'); tdAvg.textContent = money(item.total / monthCount);
-            tr.appendChild(tdName); tr.appendChild(tdTotal); tr.appendChild(tdAvg);
+            const tdAvg = document.createElement('td'); tdAvg.textContent = money(monthlyAvg);
+            const tdBudget = document.createElement('td'); tdBudget.textContent = money(item.budget_target);
+            const tdDiff = document.createElement('td'); tdDiff.textContent = money(difference); tdDiff.className = difference > 0 ? 'positive' : (difference < 0 ? 'negative' : '');
+            tr.appendChild(tdName); tr.appendChild(tdTotal); tr.appendChild(tdAvg); tr.appendChild(tdBudget); tr.appendChild(tdDiff);
             df.appendChild(tr);
         });
         tableBody.appendChild(df);
     } else {
         const tr = document.createElement('tr');
-        const td = document.createElement('td'); td.colSpan = 3; td.textContent = 'No data available';
+        const td = document.createElement('td'); td.colSpan = 5; td.textContent = 'No data available';
         tr.appendChild(td);
         tableBody.appendChild(tr);
     }
@@ -429,7 +433,7 @@ async function initBudgetsPage() {
                 <td>${money(cat.monthly_avg)}</td>
                 <td>${money(cat.three_month_total)}</td>
                 <td>${money(cat.est_annual_spending)}</td>
-                <td>${money(cat.difference)}</td>
+                <td class="${cat.difference > 0 ? 'positive' : (cat.difference < 0 ? 'negative' : '')}">${money(cat.difference)}</td>
                 <td>
                     <button class="edit-budget-btn" data-id="${cat.id}" data-type="expense"><span class="icon">✏️</span></button>
                     <button class="delete-budget-btn" data-id="${cat.id}" data-type="expense"><span class="icon">🗑️</span></button>
@@ -488,9 +492,9 @@ async function initBudgetsPage() {
         });
     }
 
-    // Income budgets (no analytics table columns)
+    // Income budgets with analytics from backend
     async function populateIncomeBudgetTable() {
-        const categories = await ipcRenderer.invoke('get-income-categories');
+        const categories = await ipcRenderer.invoke('get-income-budget-data'); // includes analytics fields
 
         incomeTableBody.innerHTML = '';
         categories.forEach(cat => {
@@ -507,6 +511,10 @@ async function initBudgetsPage() {
                         step="10"
                         placeholder="0.00">
                 </td>
+                <td>${money(cat.monthly_avg)}</td>
+                <td>${money(cat.three_month_total)}</td>
+                <td>${money(cat.est_annual_spending)}</td>
+                <td class="${cat.difference > 0 ? 'positive' : (cat.difference < 0 ? 'negative' : '')}">${money(cat.difference)}</td>
                 <td>
                     <button class="edit-budget-btn" data-id="${cat.id}" data-type="income"><span class="icon">✏️</span></button>
                     <button class="delete-budget-btn" data-id="${cat.id}" data-type="income"><span class="icon">🗑️</span></button>
@@ -540,7 +548,7 @@ async function initBudgetsPage() {
             });
         });
 
-        // Input change handlers
+        // Input change handlers (update target and refresh analytics)
         incomeTableBody.querySelectorAll('.budget-input').forEach(input => {
             input.addEventListener('change', async (e) => {
                 const targetEl = e.target;
@@ -556,6 +564,7 @@ async function initBudgetsPage() {
                 if (result.success) {
                     targetEl.style.borderColor = 'green';
                     setTimeout(() => targetEl.style.borderColor = '', 800);
+                    await populateIncomeBudgetTable(); // refresh metrics
                     notifyDataChanged();
                 } else {
                     targetEl.style.borderColor = 'red';

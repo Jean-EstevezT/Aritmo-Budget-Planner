@@ -143,11 +143,84 @@ body {
 /* Details tables used in dashboard (income/expenses by category) */
 .details-table { width: 100%; border-collapse: collapse; table-layout: fixed; margin-top: 8px; }
 .details-table th, .details-table td { padding: 8px 10px; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
-.details-table thead th { background: transparent; color: var(--gray-color); font-weight: 600; text-align: left; }
-.details-table tbody td:nth-child(2), .details-table tbody td:nth-child(3) { text-align: right; white-space: nowrap; }
-.details-table th:nth-child(1), .details-table td:nth-child(1) { width: 60%; }
-.details-table th:nth-child(2), .details-table td:nth-child(2) { width: 20%; }
-.details-table th:nth-child(3), .details-table td:nth-child(3) { width: 20%; }
+.details-table thead th { background: transparent; color: var(--gray-color); font-weight: 600; text-align: left; font-size: 12px; }
+.details-table tbody td:nth-child(2), .details-table tbody td:nth-child(3), .details-table tbody td:nth-child(4), .details-table tbody td:nth-child(5) { text-align: right; white-space: nowrap; }
+.details-table th:nth-child(1), .details-table td:nth-child(1) { width: 30%; }
+.details-table th:nth-child(2), .details-table td:nth-child(2) { width: 18%; }
+.details-table th:nth-child(3), .details-table td:nth-child(3) { width: 18%; }
+.details-table th:nth-child(4), .details-table td:nth-child(4) { width: 17%; }
+.details-table th:nth-child(5), .details-table td:nth-child(5) { width: 17%; }
+
+/* Budget tables specific styling - wider layout for more columns */
+#expense-budgets-table, #income-budgets-table {
+    table-layout: auto;
+    min-width: 100%;
+    font-size: 13px;
+}
+
+#expense-budgets-table th, #income-budgets-table th,
+#expense-budgets-table td, #income-budgets-table td {
+    padding: 6px 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Budget table column widths */
+#expense-budgets-table th:nth-child(1), #income-budgets-table th:nth-child(1),
+#expense-budgets-table td:nth-child(1), #income-budgets-table td:nth-child(1) {
+    width: 20%;
+    min-width: 120px;
+}
+
+#expense-budgets-table th:nth-child(2), #income-budgets-table th:nth-child(2),
+#expense-budgets-table td:nth-child(2), #income-budgets-table td:nth-child(2),
+#expense-budgets-table th:nth-child(3), #income-budgets-table th:nth-child(3),
+#expense-budgets-table td:nth-child(3), #income-budgets-table td:nth-child(3),
+#expense-budgets-table th:nth-child(4), #income-budgets-table th:nth-child(4),
+#expense-budgets-table td:nth-child(4), #income-budgets-table td:nth-child(4),
+#expense-budgets-table th:nth-child(5), #income-budgets-table th:nth-child(5),
+#expense-budgets-table td:nth-child(5), #income-budgets-table td:nth-child(5),
+#expense-budgets-table th:nth-child(6), #income-budgets-table th:nth-child(6),
+#expense-budgets-table td:nth-child(6), #income-budgets-table td:nth-child(6) {
+    width: 13%;
+    min-width: 100px;
+    text-align: right;
+}
+
+#expense-budgets-table th:nth-child(7), #income-budgets-table th:nth-child(7),
+#expense-budgets-table td:nth-child(7), #income-budgets-table td:nth-child(7) {
+    width: 8%;
+    min-width: 80px;
+    text-align: center;
+}
+
+/* Budget input styling */
+.budget-input {
+    width: 100%;
+    max-width: 100px;
+    padding: 4px 6px;
+    background-color: var(--hover-color);
+    color: var(--font-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 12px;
+    text-align: right;
+    box-sizing: border-box;
+}
+
+.budget-input:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+    background-color: var(--card-color);
+}
+
+/* Budget table container for horizontal scrolling */
+.budget-table-container {
+    overflow-x: auto;
+    margin: 0 -20px;
+    padding: 0 20px;
+}
 
 /* Monthly averages card: tighten label font and center numbers consistently */
 .monthly-summary-card { display: flex; justify-content: space-around; text-align: center; padding: 20px; gap: 10px; }
@@ -228,6 +301,22 @@ body {
     }
     .settings-grid {
         grid-template-columns: 1fr;
+    }
+    
+    /* Budget tables responsive behavior */
+    .budget-table-container {
+        margin: 0 -20px;
+        padding: 0 20px;
+    }
+    
+    #expense-budgets-table, #income-budgets-table {
+        min-width: 800px;
+        font-size: 11px;
+    }
+    
+    #expense-budgets-table th, #income-budgets-table th,
+    #expense-budgets-table td, #income-budgets-table td {
+        padding: 4px 6px;
     }
 }
 
