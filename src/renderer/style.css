@@ -99,7 +99,7 @@ body {
 /* ---------------------------
     Dashboard / Cards / Charts
     --------------------------- */
-.dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+.dashboard-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
 .dashboard-column { display: flex; flex-direction: column; gap: 20px; }
 
 .card { background-color: var(--card-color); border-radius: 8px; padding: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
@@ -357,4 +357,8 @@ body {
 
 .negative {
     color: var(--accent-red);
+}
+
+.dashboard-column:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
 }

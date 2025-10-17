@@ -4,8 +4,8 @@ const { ipcRenderer } = require('electron');
 const { CHANNELS } = require('../../common/ipcChannels');
 
 // Dashboard
-async function getDashboardData() {
-  return ipcRenderer.invoke(CHANNELS.GET_DASHBOARD_DATA);
+async function getDashboardData(timePeriod) {
+  return ipcRenderer.invoke(CHANNELS.GET_DASHBOARD_DATA, timePeriod);
 }
 
 // Drilldown

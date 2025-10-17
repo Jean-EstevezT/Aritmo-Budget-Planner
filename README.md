@@ -2,6 +2,8 @@
 
 Desktop budget planner (Electron) with a visual dashboard for income, expenses, and goals by category.
 
+![Aritmo Screenshot](screen/screen1.jpg)
+
 - Main code (main process): [src/main/main.js](src/main/main.js)
 - Database and migrations: [src/main/database.js](src/main/database.js)
 - IPC (channels and handlers): [src/common/ipcChannels.js](src/common/ipcChannels.js), [src/main/ipc.js](src/main/ipc.js)

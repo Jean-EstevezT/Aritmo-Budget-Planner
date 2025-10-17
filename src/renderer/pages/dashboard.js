@@ -32,11 +32,11 @@ function populateDetailsTable(bodyId, data, monthCount, isExpense) {
   }
 }
 
-async function initDashboardPage() {
+async function initDashboardPage(timePeriod = 'all') {
   destroyCharts();
 
   try {
-    const data = await api.getDashboardData();
+    const data = await api.getDashboardData(timePeriod);
     if (!data) throw new Error("No dashboard data received from backend.");
 
     const { summary, expensesByCategory, incomeByCategory } = data;
@@ -92,5 +92,9 @@ async function initDashboardPage() {
     console.error("Error rendering Dashboard:", error);
   }
 }
+
+document.getElementById('time-period').addEventListener('change', (event) => {
+    initDashboardPage(event.target.value);
+});
 
 module.exports = { initDashboardPage };
