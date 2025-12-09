@@ -4,18 +4,33 @@
   "description": "Visual dashboard for budget tracking.",
   "main": "src/main/main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "concurrently \"npm run dev\" \"npm run electron\"",
+    "dev": "vite src/renderer",
+    "electron": "wait-on tcp:5173 && cross-env NODE_ENV=development electron .",
+    "build": "vite build src/renderer",
+    "preview": "vite preview src/renderer"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "electron": "^25.9.8"
+    "@electron/rebuild": "^4.0.1",
+    "@vitejs/plugin-react": "^5.1.2",
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
+    "electron": "^25.9.8",
+    "vite": "^7.2.7",
+    "wait-on": "^9.0.3"
   },
   "dependencies": {
+    "@phosphor-icons/react": "^2.1.10",
     "@phosphor-icons/web": "^2.1.2",
-    "chart.js": "^4.3.0",
+    "better-sqlite3": "^12.5.0",
+    "chart.js": "^4.5.1",
     "knex": "^3.1.0",
-    "sqlite3": "^5.1.6"
+    "react": "^19.2.1",
+    "react-chartjs-2": "^5.3.1",
+    "react-dom": "^19.2.1",
+    "react-router-dom": "^7.10.1"
   }
 }

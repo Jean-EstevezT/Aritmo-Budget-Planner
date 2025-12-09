@@ -1,16 +1,15 @@
 const { ipcMain } = require('electron');
 const { knex, insertDefaultExpenseCategories, insertDefaultIncomeCategories } = require('./database');
-const { CHANNELS } = require('../common/ipcChannels');
+const { CHANNELS } = require('../common/ipcChannels.json');
 
-// --- Utility helpers (moved from main) ---
+// Utility helpers
 const toNumber = (v) => { const n = Number(v); return Number.isFinite(n) ? n : 0; };
 const toIntOrNull = (v) => { const n = parseInt(v, 10); return Number.isFinite(n) ? n : null; };
 const coerceFields = (row, fields) => { if (!row) return row; const patch = {}; for (const f of fields) patch[f] = toNumber(row[f]); return { ...row, ...patch }; };
 const coerceArrayFields = (rows, fields) => Array.isArray(rows) ? rows.map(r => coerceFields(r, fields)) : [];
 
 function registerIpcHandlers() {
-  // --- IPC HANDLERS ---
-  // --- IPC handler for the Drill Down chart ---
+
   ipcMain.handle(CHANNELS.GET_MONTHLY_EXPENSES_FOR_CATEGORY, async (_, categoryId) => {
     const cid = toIntOrNull(categoryId);
     if (!cid) return [];
@@ -231,68 +230,68 @@ function registerIpcHandlers() {
   ipcMain.handle(CHANNELS.GET_DASHBOARD_DATA, async (event, timePeriod) => {
     console.log(`[Backend] Dashboard data request received for period: ${timePeriod}`);
     try {
-        let expensesQuery = knex('expenses');
-        let incomeQuery = knex('income');
-        
-        const dateRangeQuery = knex.select(knex.raw('MIN(date) as minDate, MAX(date) as maxDate')).from(function() {
-            this.select('date').from('income').unionAll(function() {
-                this.select('date').from('expenses');
-            }).as('transactions');
-        });
+      let expensesQuery = knex('expenses');
+      let incomeQuery = knex('income');
 
-        if (timePeriod && timePeriod !== 'all') {
-            const date = new Date();
-            date.setDate(date.getDate() - parseInt(timePeriod, 10));
-            const dateString = date.toISOString().split('T')[0];
-            expensesQuery.where('date', '>=', dateString);
-            incomeQuery.where('date', '>=', dateString);
-            dateRangeQuery.where('date', '>=', dateString);
-        }
+      const dateRangeQuery = knex.select(knex.raw('MIN(date) as minDate, MAX(date) as maxDate')).from(function () {
+        this.select('date').from('income').unionAll(function () {
+          this.select('date').from('expenses');
+        }).as('transactions');
+      });
 
-        const dateRange = await dateRangeQuery;
+      if (timePeriod && timePeriod !== 'all') {
+        const date = new Date();
+        date.setDate(date.getDate() - parseInt(timePeriod, 10));
+        const dateString = date.toISOString().split('T')[0];
+        expensesQuery.where('date', '>=', dateString);
+        incomeQuery.where('date', '>=', dateString);
+        dateRangeQuery.where('date', '>=', dateString);
+      }
 
-        let monthCount = 1;
-        if (dateRange[0] && dateRange[0].minDate && dateRange[0].maxDate) {
-            const min = new Date(dateRange[0].minDate);
-            const max = new Date(dateRange[0].maxDate);
-            monthCount = (max.getFullYear() - min.getFullYear()) * 12 + (max.getMonth() - min.getMonth()) + 1;
-        }
+      const dateRange = await dateRangeQuery;
 
-        const incomeResult = await incomeQuery.clone().sum('amount as total').first();
-        const expenseResult = await expensesQuery.clone().sum('amount as total').first();
+      let monthCount = 1;
+      if (dateRange[0] && dateRange[0].minDate && dateRange[0].maxDate) {
+        const min = new Date(dateRange[0].minDate);
+        const max = new Date(dateRange[0].maxDate);
+        monthCount = (max.getFullYear() - min.getFullYear()) * 12 + (max.getMonth() - min.getMonth()) + 1;
+      }
 
-        const totalIncome = Number(incomeResult.total) || 0;
-        const totalExpenses = Number(expenseResult.total) || 0;
+      const incomeResult = await incomeQuery.clone().sum('amount as total').first();
+      const expenseResult = await expensesQuery.clone().sum('amount as total').first();
 
-        const summary = {
-            totalIncome,
-            totalExpenses,
-            totalSavings: totalIncome - totalExpenses,
-            monthCount: monthCount
-        };
+      const totalIncome = Number(incomeResult.total) || 0;
+      const totalExpenses = Number(expenseResult.total) || 0;
 
-        const expensesByCategoryRaw = await expensesQuery.clone()
-            .join('expense_categories', 'expenses.category_id', 'expense_categories.id')
-            .select('expense_categories.id', 'expense_categories.name', 'expense_categories.budget_target')
-            .groupBy('expense_categories.id')
-            .sum('amount as total')
-            .orderBy('total', 'desc');
-        const incomeByCategoryRaw = await incomeQuery.clone()
-            .join('income_categories', 'income.category_id', 'income_categories.id')
-            .select('income_categories.id', 'income_categories.name', 'income_categories.budget_target')
-            .groupBy('income_categories.id')
-            .sum('amount as total')
-            .orderBy('total', 'desc');
+      const summary = {
+        totalIncome,
+        totalExpenses,
+        totalSavings: totalIncome - totalExpenses,
+        monthCount: monthCount
+      };
 
-        const expensesByCategory = expensesByCategoryRaw.map(r => ({ id: r.id, name: r.name, total: toNumber(r.total), budget_target: toNumber(r.budget_target) }));
-        const incomeByCategory = incomeByCategoryRaw.map(r => ({ id: r.id, name: r.name, total: toNumber(r.total), budget_target: toNumber(r.budget_target) }));
+      const expensesByCategoryRaw = await expensesQuery.clone()
+        .join('expense_categories', 'expenses.category_id', 'expense_categories.id')
+        .select('expense_categories.id', 'expense_categories.name', 'expense_categories.budget_target')
+        .groupBy('expense_categories.id')
+        .sum('amount as total')
+        .orderBy('total', 'desc');
+      const incomeByCategoryRaw = await incomeQuery.clone()
+        .join('income_categories', 'income.category_id', 'income_categories.id')
+        .select('income_categories.id', 'income_categories.name', 'income_categories.budget_target')
+        .groupBy('income_categories.id')
+        .sum('amount as total')
+        .orderBy('total', 'desc');
 
-        return { summary, expensesByCategory, incomeByCategory };
+      const expensesByCategory = expensesByCategoryRaw.map(r => ({ id: r.id, name: r.name, total: toNumber(r.total), budget_target: toNumber(r.budget_target) }));
+      const incomeByCategory = incomeByCategoryRaw.map(r => ({ id: r.id, name: r.name, total: toNumber(r.total), budget_target: toNumber(r.budget_target) }));
+
+      return { summary, expensesByCategory, incomeByCategory };
     } catch (error) {
-        console.error('[Backend] Error fetching dashboard data:', error);
-        return null;
+      console.error('[Backend] Error fetching dashboard data:', error);
+      return null;
     }
-});
+  });
 
   // --- IPC: Update budget target ---
   ipcMain.handle(CHANNELS.UPDATE_BUDGET_TARGET, async (_, { type, categoryId, target }) => {

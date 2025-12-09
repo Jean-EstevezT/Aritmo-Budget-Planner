@@ -8,12 +8,19 @@ function createWindow() {
     width: 1600,
     height: 900,
     backgroundColor: '#1e2024',
+    icon: path.join(__dirname, '../../resources/icon.ico'), // Application Icon
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false
     }
   });
-  win.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'));
+  if (process.env.NODE_ENV === 'development') {
+    win.loadURL('http://localhost:5173');
+    win.webContents.openDevTools(); // Auto-open devtools in dev mode
+  } else {
+    // Production: load built file from dist/renderer
+    win.loadFile(path.join(__dirname, '../../dist/renderer/index.html'));
+  }
   // Hide default menu bar and set auto hide
   win.setMenuBarVisibility(false);
   win.setAutoHideMenuBar(true);
