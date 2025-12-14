@@ -23,7 +23,8 @@
     },
     "files": [
       "dist/**/*",
-      "electron/**/*"
+      "electron/**/*",
+      "resources/**/*"
     ],
     "win": {
       "icon": "resources/favicon.ico",
