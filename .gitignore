@@ -1,65 +1,24 @@
-# Node
-node_modules/
+# Logs
+logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-package-lock.json
+pnpm-debug.log*
+lerna-debug.log*
 
-# Logs
-logs/
-*.log
+node_modules
+dist
+dist-ssr
+*.local
 
-# OS files
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
 .DS_Store
-Thumbs.db
-
-# Environment
-.env
-.env.local
-.env.*.local
-
-# Electron / build artifacts
-dist/
-build/
-release/
-
-# SQLite DB
-*.sqlite
-*.sqlite3
-budget.sqlite3
-
-# VS Code
-.vscode/
-
-# OS generated files
-ehthumbs.db
-Icon?
-
-# npm cache
-.npm
-
-# macOS
-*.DS_Store
-
-# Windows thumbnail cache files
-Thumbs.db
-
-# Coverage
-coverage/
-
-# temp files
-*.tmp
-*.temp
-
-# JetBrains IDEs
-.idea/
-
-# Misc
-.sass-cache
-bower_components/
-
-# Ignore node modules for other package managers
-jspm_packages/
-
-# Ignore lockfile if desired (uncomment to ignore)
-# package-lock.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

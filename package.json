@@ -1,36 +1,61 @@
 {
   "name": "aritmo",
-  "version": "1.0.0",
-  "description": "Visual dashboard for budget tracking.",
-  "main": "src/main/main.js",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "main": "electron/main.js",
+  "productName": "Aritmo",
+  "description": "Aritmo - Budget Planner",
   "scripts": {
-    "start": "concurrently \"npm run dev\" \"npm run electron\"",
-    "dev": "vite src/renderer",
-    "electron": "wait-on tcp:5173 && cross-env NODE_ENV=development electron .",
-    "build": "vite build src/renderer",
-    "preview": "vite preview src/renderer"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "electron": "wait-on tcp:3000 && cross-env NODE_ENV=development electron .",
+    "electron:pack": "electron-builder --dir",
+    "electron:dist": "vite build && electron-builder",
+    "dev:electron": "concurrently -k \"cross-env BROWSER=none npm run dev\" \"npm run electron\""
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "@electron/rebuild": "^4.0.1",
-    "@vitejs/plugin-react": "^5.1.2",
-    "concurrently": "^9.2.1",
-    "cross-env": "^10.1.0",
-    "electron": "^25.9.8",
-    "vite": "^7.2.7",
-    "wait-on": "^9.0.3"
+  "build": {
+    "appId": "com.aritmo.app",
+    "productName": "Aritmo",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*"
+    ],
+    "win": {
+      "icon": "resources/favicon.ico",
+      "target": [
+        "nsis"
+      ]
+    },
+    "mac": {
+      "icon": "resources/logo512.png"
+    },
+    "linux": {
+      "icon": "resources/logo512.png"
+    }
   },
   "dependencies": {
-    "@phosphor-icons/react": "^2.1.10",
-    "@phosphor-icons/web": "^2.1.2",
     "better-sqlite3": "^12.5.0",
-    "chart.js": "^4.5.1",
-    "knex": "^3.1.0",
+    "lucide-react": "^0.559.0",
     "react": "^19.2.1",
-    "react-chartjs-2": "^5.3.1",
     "react-dom": "^19.2.1",
-    "react-router-dom": "^7.10.1"
+    "recharts": "^3.5.1"
+  },
+  "devDependencies": {
+    "@electron/rebuild": "^4.0.2",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^22.14.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
+    "electron": "^39.2.6",
+    "electron-builder": "^26.0.12",
+    "typescript": "~5.8.2",
+    "vite": "^6.2.0",
+    "wait-on": "^9.0.3"
   }
 }
