@@ -18,13 +18,11 @@ const Dashboard: React.FC = () => {
   const [summary, setSummary] = React.useState({ totalIncome: 0, totalExpense: 0, balance: 0 });
   const [pieData, setPieData] = React.useState<{ name: string, value: number, color: string }[]>([]);
 
-  // Fetch Backend Analytics
+  // Load dashboard data
   React.useEffect(() => {
     if (user?.username) {
-      // Summary
       window.electron.db.getFinancialSummary(user.username).then(setSummary);
 
-      // Category Breakdown
       window.electron.db.getCategoryBreakdown(user.username).then(data => {
         const formatted = data.map(d => ({
           name: t(d.name || 'Unknown'),
@@ -34,12 +32,11 @@ const Dashboard: React.FC = () => {
         setPieData(formatted);
       });
     }
-  }, [user, transactions, t]); // Refresh when transactions change in context or user changes
+  }, [user, transactions, t]);
 
-  // Use backend summary
   const { totalIncome, totalExpense, balance } = summary;
 
-  // Calculate Upcoming Bills Total (Client-side for now, could be moved too)
+  // Upcoming bills total
   const upcomingBillsTotal = bills
     .filter(b => !b.isPaid)
     .reduce((sum, b) => sum + b.amount, 0);
@@ -49,13 +46,11 @@ const Dashboard: React.FC = () => {
     exportToExcel(transactions, categories, filename);
   };
 
-
-  // Prepare Chart Data (Aggregated by Month)
+  // Monthly aggregated data for charts
   const chartData = React.useMemo(() => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const currentYear = new Date().getFullYear();
 
-    // Initialize current year months
     const dataMap = months.map(m => ({ name: m, income: 0, expense: 0 }));
 
     transactions.forEach(t => {

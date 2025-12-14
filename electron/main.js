@@ -30,96 +30,35 @@ async function ensureDataDir() {
 // User Database Connection Cache
 const dbCache = {};
 
+// Initialize and cache database connection for a specific user
 function getUserDB(username) {
   if (dbCache[username]) return dbCache[username];
 
   const dbPath = path.join(DATA_DIR, `${username}.db`);
   const db = new Database(dbPath);
 
-  // Initialize Schema
-  db.exec(`
-        CREATE TABLE IF NOT EXISTS categories (
-            id TEXT PRIMARY KEY,
-            name TEXT NOT NULL,
-            type TEXT CHECK(type IN ('income', 'expense')) NOT NULL,
-            color TEXT,
-            budget_limit REAL
-        );
+  // Initialize Schema if needed
+  const schema = `
+    CREATE TABLE IF NOT EXISTS categories (id TEXT PRIMARY KEY, name TEXT NOT NULL, type TEXT CHECK(type IN ('income', 'expense')) NOT NULL, color TEXT, budget_limit REAL);
+    CREATE TABLE IF NOT EXISTS transactions (id TEXT PRIMARY KEY, description TEXT, amount REAL, date TEXT, category_id TEXT, type TEXT CHECK(type IN ('income', 'expense')), status TEXT, original_amount REAL, original_currency TEXT, FOREIGN KEY(category_id) REFERENCES categories(id));
+    CREATE TABLE IF NOT EXISTS debts (id TEXT PRIMARY KEY, name TEXT NOT NULL, total_amount REAL, remaining_amount REAL, interest_rate REAL, minimum_payment REAL, due_date TEXT);
+    CREATE TABLE IF NOT EXISTS recurring_rules (id TEXT PRIMARY KEY, description TEXT, amount REAL, category_id TEXT, type TEXT, frequency TEXT, next_due_date TEXT, active INTEGER);
+    CREATE TABLE IF NOT EXISTS savings_goals (id TEXT PRIMARY KEY, name TEXT, target_amount REAL, current_amount REAL, deadline TEXT, color TEXT);
+    CREATE TABLE IF NOT EXISTS bills (id TEXT PRIMARY KEY, name TEXT, amount REAL, due_date TEXT, is_paid INTEGER, category TEXT);
+    CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT);
+  `;
+  db.exec(schema);
 
-        CREATE TABLE IF NOT EXISTS transactions (
-            id TEXT PRIMARY KEY,
-            description TEXT,
-            amount REAL,
-            date TEXT,
-            category_id TEXT,
-            type TEXT CHECK(type IN ('income', 'expense')),
-            status TEXT,
-            original_amount REAL,
-            original_currency TEXT,
-            FOREIGN KEY(category_id) REFERENCES categories(id)
-        );
-
-        CREATE TABLE IF NOT EXISTS debts (
-            id TEXT PRIMARY KEY,
-            name TEXT NOT NULL,
-            total_amount REAL,
-            remaining_amount REAL,
-            interest_rate REAL,
-            minimum_payment REAL,
-            due_date TEXT
-        );
-
-        CREATE TABLE IF NOT EXISTS recurring_rules (
-            id TEXT PRIMARY KEY,
-            description TEXT,
-            amount REAL,
-            category_id TEXT,
-            type TEXT,
-            frequency TEXT,
-            next_due_date TEXT,
-            active INTEGER
-        );
-
-        CREATE TABLE IF NOT EXISTS savings_goals (
-            id TEXT PRIMARY KEY,
-            name TEXT,
-            target_amount REAL,
-            current_amount REAL,
-            deadline TEXT,
-            color TEXT
-        );
-
-        CREATE TABLE IF NOT EXISTS bills (
-            id TEXT PRIMARY KEY,
-            name TEXT,
-            amount REAL,
-            due_date TEXT,
-            is_paid INTEGER,
-            category TEXT
-        );
-
-        CREATE TABLE IF NOT EXISTS settings (
-            key TEXT PRIMARY KEY,
-            value TEXT
-        );
-    `);
-
-  const checkCats = db.prepare('SELECT count(*) as count FROM categories').get();
-  if (checkCats.count === 0) {
-    const insertCat = db.prepare('INSERT INTO categories (id, name, type, color, budget_limit) VALUES (@id, @name, @type, @color, @budgetLimit)');
-    const insertMany = db.transaction((cats) => {
-      for (const cat of cats) insertCat.run(cat);
-    });
-
-    insertMany([
-      // Income
+  // Default Categories
+  const { count } = db.prepare('SELECT count(*) as count FROM categories').get();
+  if (count === 0) {
+    const categories = [
       { id: 'inc-1', name: 'cat.salary', type: 'income', color: 'bg-emerald-500', budgetLimit: 0 },
       { id: 'inc-2', name: 'cat.freelance', type: 'income', color: 'bg-teal-500', budgetLimit: 0 },
       { id: 'inc-3', name: 'cat.investments', type: 'income', color: 'bg-green-500', budgetLimit: 0 },
       { id: 'inc-4', name: 'cat.business', type: 'income', color: 'bg-lime-500', budgetLimit: 0 },
       { id: 'inc-5', name: 'cat.gifts', type: 'income', color: 'bg-cyan-500', budgetLimit: 0 },
       { id: 'inc-6', name: 'cat.rental', type: 'income', color: 'bg-emerald-600', budgetLimit: 0 },
-      // Expense
       { id: 'exp-1', name: 'cat.housing', type: 'expense', color: 'bg-indigo-500', budgetLimit: 2000 },
       { id: 'exp-2', name: 'cat.food', type: 'expense', color: 'bg-rose-500', budgetLimit: 800 },
       { id: 'exp-3', name: 'cat.transport', type: 'expense', color: 'bg-orange-500', budgetLimit: 400 },
@@ -131,7 +70,13 @@ function getUserDB(username) {
       { id: 'exp-9', name: 'cat.personal', type: 'expense', color: 'bg-pink-500', budgetLimit: 150 },
       { id: 'exp-10', name: 'cat.travel', type: 'expense', color: 'bg-violet-500', budgetLimit: 0 },
       { id: 'exp-11', name: 'cat.subscriptions', type: 'expense', color: 'bg-slate-500', budgetLimit: 100 },
-    ]);
+    ];
+
+    const insertCat = db.prepare('INSERT INTO categories (id, name, type, color, budget_limit) VALUES (@id, @name, @type, @color, @budgetLimit)');
+    const insertMany = db.transaction((cats) => {
+      for (const cat of cats) insertCat.run(cat);
+    });
+    insertMany(categories);
   }
 
   dbCache[username] = db;
@@ -180,23 +125,21 @@ const setupIPC = () => {
     }
   });
 
-  // Auth: Register
+  // User Registration
   ipcMain.handle('auth:register', async (_, { username, password, avatar, language }) => {
     try {
       const usersPath = path.join(DATA_DIR, 'users.json');
-      const data = await fs.readFile(usersPath, 'utf-8');
-      const users = JSON.parse(data);
+      const users = JSON.parse(await fs.readFile(usersPath, 'utf-8'));
 
       if (users.some(u => u.username === username)) {
         return { success: false, message: 'User already exists' };
       }
 
-      const newUser = { username, password, avatar, language: language || 'en' }; // Note: Password should be hashed in prod
+      const newUser = { username, password, avatar, language: language || 'en' };
       users.push(newUser);
-      await fs.writeFile(usersPath, JSON.stringify(users, null, 2));
 
-      // Init DB
-      getUserDB(username);
+      await fs.writeFile(usersPath, JSON.stringify(users, null, 2));
+      getUserDB(username); // Pre-initialize DB
 
       return { success: true };
     } catch (error) {

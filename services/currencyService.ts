@@ -1,11 +1,6 @@
-
-// Using a reliable free public API for demo purposes. 
-// In a production app, this would likely be a paid service or backend proxy.
-
 const BASE_URL = 'http://www.floatrates.com/daily/usd.json';
 
-// Fallback rates relative to USD (approximate values for demo)
-// Used when the public API does not support the specific currency pair (e.g. LATAM currencies)
+// Fallback rates relative to USD (approximate)
 export const MOCK_RATES: { [key: string]: number } = {
   USD: 1,
   EUR: 0.92,
@@ -27,37 +22,26 @@ export const getExchangeRate = async (from: string, to: string): Promise<number 
   if (from === to) return 1;
 
   try {
-    // using floatrates.com (daily USD rates)
     const response = await fetch(BASE_URL);
 
     if (!response.ok) {
-      throw new Error('Currency pair not supported by public API');
+      throw new Error('Currency API unavailable');
     }
 
     const data = await response.json();
 
-    // FloatRates structure: { "eur": { "rate": 0.95, ... }, ... } relative to USD (base)
-    // To get Rate(From -> To):
-    // 1. Get USD -> From rate
-    // 2. Get USD -> To rate
-    // Rate = (USD -> To) / (USD -> From)
-
-    // Helper to get rate from USD
+    // Calculate cross rate via USD
     const getRateFromUSD = (currency: string): number => {
       if (currency === 'USD') return 1;
       const code = currency.toLowerCase();
-      if (data[code] && data[code].rate) {
-        return data[code].rate;
-      }
-      return 0; // Not found
+      if (data[code]?.rate) return data[code].rate;
+      return 0;
     };
 
     const rateFrom = getRateFromUSD(from);
     const rateTo = getRateFromUSD(to);
 
     if (!rateFrom || !rateTo) {
-      // Fallback to mock if one is missing in the API response (e.g. sometimes minor ones missing)
-      console.warn(`Rate not found for ${from} or ${to} in API response, falling back.`);
       throw new Error('Rate not found');
     }
 

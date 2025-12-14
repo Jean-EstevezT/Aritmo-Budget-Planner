@@ -25,7 +25,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const DB_KEY = 'finsynergy_db_users';
 const SESSION_KEY = 'finsynergy_session';
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -48,13 +47,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const getStoredUsers = async (): Promise<User[]> => {
     try {
-      // Now async, but the interface definition in this file might need update or we handle promise
-      // Wait, the context interface expects synchronous return for getStoredUsers?
-      // Let's check the interface. It returns User[]. I need to change it to Promise<User[]> or update state internally.
-      // The component Login.tsx calls it. I should probably update the Context Interface first.
-
-      // Actually, let's look at how it's used. Login.tsx calls it in useEffect. 
-      // I will update the Context Interface in this file to return Promise<User[]> for getStoredUsers.
       const users = await window.electron.auth.getUsers();
       return users;
     } catch (e) {
