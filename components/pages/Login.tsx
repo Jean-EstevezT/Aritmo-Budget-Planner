@@ -92,9 +92,7 @@ const Login: React.FC = () => {
                 : t('login.subtitle')
             }
           </p>
-          <p className="text-sm text-slate-400 mb-8 max-w-sm">
-            {t('login.description')}
-          </p>
+
 
           {/* VIEW: SELECT PROFILE */}
           {view === 'select' && (
@@ -261,9 +259,7 @@ const Login: React.FC = () => {
                   : 'Toma el Control de tu Futuro Financiero'}
               </h2>
               <p className="text-indigo-100 text-lg">
-                {language === 'en'
-                  ? 'Smart analytics and budget planning all in one place.'
-                  : 'Analíticas inteligentes y planeación de presupuesto en un solo lugar.'}
+                {t('login.description')}
               </p>
             </div>
           </div>
