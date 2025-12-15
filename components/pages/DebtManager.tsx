@@ -74,14 +74,11 @@ const DebtManager: React.FC = () => {
     const calculatePayoffDate = (debt: Debt) => {
         if (debt.minimumPayment <= 0 || debt.interestRate < 0) return 'N/A';
 
-        const r = debt.interestRate / 100 / 12; // Monthly interest rate
+        const r = debt.interestRate / 100 / 12;
         const p = debt.remainingAmount;
         const m = debt.minimumPayment;
 
-        // Check if payment covers interest
         if (m <= p * r) return 'Never (Payment too low)';
-
-        // N = -log(1 - (r * P) / M) / log(1 + r)
         const n = -Math.log(1 - (r * p) / m) / Math.log(1 + r);
 
         if (!isFinite(n)) return 'N/A';
@@ -111,8 +108,6 @@ const DebtManager: React.FC = () => {
                     {t('debt.add')}
                 </button>
             </div>
-
-            {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-gradient-to-br from-rose-500 to-pink-600 p-6 rounded-2xl text-white shadow-lg">
                     <div className="flex items-center gap-3 mb-2">
@@ -135,7 +130,6 @@ const DebtManager: React.FC = () => {
                 </div>
             </div>
 
-            {/* Debt List */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {debts.map(debt => {
                     const progress = ((debt.totalAmount - debt.remainingAmount) / debt.totalAmount) * 100;
@@ -200,8 +194,6 @@ const DebtManager: React.FC = () => {
                     </div>
                 )}
             </div>
-
-            {/* Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
                     <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl animate-in fade-in zoom-in duration-200">

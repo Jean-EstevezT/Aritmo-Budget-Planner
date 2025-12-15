@@ -9,16 +9,11 @@ const Settings: React.FC = () => {
   const { categories, addCategory, deleteCategory } = useData();
   const { t } = useLanguage();
   const { user, deleteAccount, error: authError, isLoading: isGlobalLoading } = useAuth();
-
   const [newCatName, setNewCatName] = useState('');
   const [newCatType, setNewCatType] = useState<'income' | 'expense'>('expense');
   const [newCatColor, setNewCatColor] = useState('bg-indigo-500');
-
-  // Backup State
   const [backupStatus, setBackupStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
   const [isBackupLoading, setIsBackupLoading] = useState(false);
-
-  // Delete Account State
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -70,8 +65,6 @@ const Settings: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-
-        {/* Create Category Form */}
         <div className="md:col-span-2 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
           <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
             <Plus className="w-5 h-5 text-indigo-600" />
@@ -120,8 +113,6 @@ const Settings: React.FC = () => {
             </button>
           </form>
         </div>
-
-        {/* Expense Categories List */}
         <div>
           <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
             <Tag className="w-4 h-4 text-rose-500" />
@@ -129,8 +120,6 @@ const Settings: React.FC = () => {
           </h3>
           <CategoryList type="expense" />
         </div>
-
-        {/* Income Categories List */}
         <div>
           <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
             <Tag className="w-4 h-4 text-emerald-500" />
@@ -139,8 +128,6 @@ const Settings: React.FC = () => {
           <CategoryList type="income" />
         </div>
       </div>
-
-      {/* Data Management */}
       <div className="mt-8 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
         <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
           <Database className="w-5 h-5 text-indigo-600" />
@@ -184,7 +171,6 @@ const Settings: React.FC = () => {
           <button
             onClick={async () => {
               if (!user) return;
-              // Simple confirm for import as it is destructive
               if (!confirm(t('settings.restoreConfirm'))) return;
 
               setIsBackupLoading(true);
@@ -193,7 +179,6 @@ const Settings: React.FC = () => {
                 const res = await window.electron.db.importData(user.username);
                 if (res.success) {
                   setBackupStatus({ type: 'success', message: t('settings.restoreSuccess') });
-                  // Reload page to reflect changes or trigger data reload
                   setTimeout(() => window.location.reload(), 1500);
                 } else if (res.message !== 'Cancelled') {
                   setBackupStatus({ type: 'error', message: res.message || 'Error' });
@@ -214,8 +199,6 @@ const Settings: React.FC = () => {
           </button>
         </div>
       </div>
-
-      {/* Danger Zone */}
       <div className="mt-12 p-6 border border-rose-100 rounded-2xl bg-rose-50/30">
         <h3 className="text-lg font-bold text-rose-700 flex items-center gap-2 mb-2">
           <Trash2 className="w-5 h-5" />
@@ -229,8 +212,6 @@ const Settings: React.FC = () => {
           {t('settings.deleteAccount')}
         </button>
       </div>
-
-      {/* Delete Account Modal */}
       {
         isDeleteModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">

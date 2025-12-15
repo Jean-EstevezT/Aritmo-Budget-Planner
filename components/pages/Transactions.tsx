@@ -12,18 +12,12 @@ const Transactions: React.FC = () => {
     getCategoryName, getCategoryColor } = useData();
   const { t } = useLanguage();
   const { formatAmount, convertInputToUSD, displayCurrency } = useCurrency();
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isRecurringModalOpen, setIsRecurringModalOpen] = useState(false);
   const [showRecurringList, setShowRecurringList] = useState(false);
-
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-
-  // View State (Filters)
   const [activeTab, setActiveTab] = useState<'all' | 'income' | 'expense'>('all');
-
-  // Transaction Form State
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [inputCurrency, setInputCurrency] = useState('USD');
@@ -31,8 +25,6 @@ const Transactions: React.FC = () => {
   const [categoryId, setCategoryId] = useState('');
   const [type, setType] = useState<'income' | 'expense'>('expense');
   const [status, setStatus] = useState<'completed' | 'pending'>('completed');
-
-  // Recurring Form State
   const [rDescription, setRDescription] = useState('');
   const [rAmount, setRAmount] = useState('');
   const [rCategory, setRCategory] = useState('');
@@ -41,8 +33,6 @@ const Transactions: React.FC = () => {
   const [rDate, setRDate] = useState('');
   const [rEditingId, setREditingId] = useState<string | null>(null);
 
-
-  // Search State
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredTransactions = transactions.filter(tr => {
@@ -81,12 +71,11 @@ const Transactions: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  // --- RECURRING HANDLERS ---
   const openRecurringModal = (rule?: RecurringRule) => {
     if (rule) {
       setREditingId(rule.id);
       setRDescription(rule.description);
-      setRAmount(rule.amount.toString()); // Assuming stored in USD for now
+      setRAmount(rule.amount.toString());
       setRCategory(rule.categoryId);
       setRType(rule.type);
       setRFrequency(rule.frequency);
@@ -176,7 +165,6 @@ const Transactions: React.FC = () => {
         </div>
       </div>
 
-      {/* Recurring Rules List Modal */}
       {showRecurringList && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl h-[80vh] flex flex-col">
@@ -224,7 +212,6 @@ const Transactions: React.FC = () => {
         </div>
       )}
 
-      {/* Add/Edit Recurring Rule Modal */}
       {isRecurringModalOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
@@ -280,9 +267,7 @@ const Transactions: React.FC = () => {
       )}
 
       <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-        {/* Toolbar & Tabs */}
         <div className="p-4 border-b border-slate-100 flex flex-col md:flex-row gap-4 items-center justify-between">
-          {/* Type Tabs */}
           <div className="flex p-1 bg-slate-100 rounded-lg w-full md:w-auto">
             <button
               onClick={() => setActiveTab('all')}
@@ -304,7 +289,6 @@ const Transactions: React.FC = () => {
             </button>
           </div>
 
-          {/* Search */}
           <div className="relative w-full md:w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
             <input
@@ -316,8 +300,6 @@ const Transactions: React.FC = () => {
             />
           </div>
         </div>
-
-        {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-slate-50 text-left">
@@ -361,7 +343,6 @@ const Transactions: React.FC = () => {
                     <div className={`font-bold ${tr.type === 'income' ? 'text-emerald-600' : 'text-slate-800'}`}>
                       {tr.type === 'income' ? '+' : '-'}{formatAmount(tr.amount)}
                     </div>
-                    {/* Display original currency if it differs from display currency or just to show detail */}
                     {tr.originalCurrency && tr.originalCurrency !== displayCurrency && (
                       <div className="text-xs text-slate-400 font-medium flex items-center gap-1 mt-0.5">
                         <Globe className="w-3 h-3" />
@@ -392,8 +373,6 @@ const Transactions: React.FC = () => {
           </table>
         </div>
       </div>
-
-      {/* Add/Edit Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
@@ -405,7 +384,6 @@ const Transactions: React.FC = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              {/* Type Switcher */}
               <div className="flex bg-slate-100 p-1 rounded-xl">
                 <button
                   type="button"
@@ -498,8 +476,6 @@ const Transactions: React.FC = () => {
                   ))}
                 </select>
               </div>
-
-              {/* Conversion hint */}
               {inputCurrency !== 'USD' && amount && (
                 <div className="text-xs text-slate-500 bg-slate-100 p-2 rounded-lg text-center">
                   ≈ {convertInputToUSD(parseFloat(amount), inputCurrency).toFixed(2)} USD {t('trans.stored')}
@@ -525,8 +501,6 @@ const Transactions: React.FC = () => {
           </div>
         </div>
       )}
-
-      {/* Delete Confirmation Modal */}
       {deleteId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden p-6 text-center space-y-4">

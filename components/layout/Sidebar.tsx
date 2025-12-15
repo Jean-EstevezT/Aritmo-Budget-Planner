@@ -57,13 +57,6 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate }) => {
         })}
       </nav>
 
-      <div className="px-4 mb-2">
-        {/* Currency selector removed */}
-      </div>
-
-      <div className="p-4 mt-auto">
-        {/* Language switcher removed */}
-      </div>
     </aside>
   );
 };

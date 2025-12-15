@@ -13,14 +13,12 @@ const About: React.FC = () => {
 
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
-            {/* Header */}
             <div>
                 <h1 className="text-3xl font-bold text-slate-800 tracking-tight">{t('about.title')}</h1>
                 <p className="text-slate-500 mt-1">{t('about.subtitle')}</p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Developer Profile Card */}
                 <div className="lg:col-span-1">
                     <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-xl shadow-slate-200/50 text-center relative overflow-hidden group">
                         <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-br from-indigo-500 to-purple-600 opacity-10 group-hover:opacity-20 transition-opacity"></div>
@@ -57,7 +55,6 @@ const About: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Roadmap / Improvements */}
                 <div className="lg:col-span-2 space-y-6">
                     <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm">
                         <div className="flex items-center gap-3 mb-6">
@@ -107,7 +104,6 @@ const About: React.FC = () => {
     );
 };
 
-// Need to import Globe locally since it's used in the config array but not in the component usage directly 
 import { Globe } from 'lucide-react';
 
 export default About;

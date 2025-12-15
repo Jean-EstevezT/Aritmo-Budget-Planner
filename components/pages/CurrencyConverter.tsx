@@ -16,7 +16,6 @@ const CurrencyConverter: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [vesDualRates, setVesDualRates] = useState<{ bcv: number, par: number } | null>(null);
 
-  // For Rates List
   const [baseRateCurr, setBaseRateCurr] = useState('USD');
 
   const { t } = useLanguage();
@@ -24,17 +23,11 @@ const CurrencyConverter: React.FC = () => {
   const fetchRate = async () => {
     setLoading(true);
 
-    // Special handling for VES Dual Display
     if (dolarRates && (fromCurr === 'VES' || toCurr === 'VES')) {
-      // We want to calculate BOTH rates for display
       let bcvRate = 0;
       let parRate = 0;
 
       if (toCurr === 'VES') {
-        // Target is VES. 
-        // Rate = (Unit of From -> USD) * (USD -> VES)
-        // If From is USD: Rate = USD -> VES
-        // If From is Other: Rate = (Other -> USD) * (USD -> VES)
 
         const fromToUsd = convertAmount(1, fromCurr, 'USD');
         bcvRate = fromToUsd * dolarRates.oficial;
@@ -42,14 +35,9 @@ const CurrencyConverter: React.FC = () => {
 
         setVesDualRates({ bcv: bcvRate, par: parRate });
 
-        // Set 'rate' to preferred/parallel for the main big number just in case, or we hide it
         setRate(parRate);
 
       } else if (fromCurr === 'VES') {
-        // Source is VES.
-        // Rate = (1 VES -> USD) * (USD -> Target)
-        // 1 VES (BCV) = 1 / Oficial_USD_VES
-        // 1 VES (PAR) = 1 / Paralelo_USD_VES
 
         const usdToTarget = convertAmount(1, 'USD', toCurr);
         bcvRate = (1 / dolarRates.oficial) * usdToTarget;
@@ -62,7 +50,6 @@ const CurrencyConverter: React.FC = () => {
       return;
     }
 
-    // Normal handling
     setVesDualRates(null);
     const r = await getExchangeRate(fromCurr, toCurr);
     setRate(r);
@@ -89,11 +76,9 @@ const CurrencyConverter: React.FC = () => {
         </div>
 
         <div className="bg-white p-8 rounded-2xl shadow-lg border border-slate-100 relative overflow-hidden">
-          {/* Decorative background element */}
           <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-indigo-50 opacity-50 z-0 pointer-events-none"></div>
 
           <div className="relative z-10 space-y-6">
-            {/* Amount Input */}
             <div>
               <label className="block text-sm font-medium text-slate-600 mb-2">{t('curr.amount')}</label>
               <div className="relative">
@@ -108,7 +93,6 @@ const CurrencyConverter: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-4">
-              {/* From Select */}
               <div className="flex-1">
                 <label className="block text-sm font-medium text-slate-600 mb-2">{t('curr.from')}</label>
                 <select
@@ -120,7 +104,6 @@ const CurrencyConverter: React.FC = () => {
                 </select>
               </div>
 
-              {/* Swap Button */}
               <button
                 onClick={handleSwap}
                 className="mt-6 p-3 bg-indigo-50 text-indigo-600 rounded-full hover:bg-indigo-100 hover:rotate-180 transition-all duration-300"
@@ -128,7 +111,6 @@ const CurrencyConverter: React.FC = () => {
                 <ArrowRightLeft className="w-5 h-5" />
               </button>
 
-              {/* To Select */}
               <div className="flex-1">
                 <label className="block text-sm font-medium text-slate-600 mb-2">{t('curr.to')}</label>
                 <select
@@ -141,7 +123,6 @@ const CurrencyConverter: React.FC = () => {
               </div>
             </div>
 
-            {/* Result Area */}
             <div className="mt-8 p-6 bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl text-center text-white relative overflow-hidden">
               <div className="relative z-10">
                 <p className="text-slate-400 text-sm mb-1">
@@ -182,7 +163,6 @@ const CurrencyConverter: React.FC = () => {
         </div>
       </div>
 
-      {/* Live Exchange Rates Section */}
       <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
         <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
           <div className="flex items-center gap-2">
@@ -205,13 +185,9 @@ const CurrencyConverter: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          {/* Add VES Widget here if relevant or keep below? User asked "en la pestaña de conversion donde esta bs" */}
-          {/* I'll put the widget at the bottom and keep this list generic. */}
 
           {SUPPORTED_CURRENCIES.filter(c => c.code !== baseRateCurr).map(currency => {
             if (currency.code === 'VES' && dolarRates) {
-              // Dual display for VES
-              // Rel to Base
               const baseToUsd = convertAmount(1, baseRateCurr, 'USD');
               const bcvRate = baseToUsd * dolarRates.oficial;
               const parRate = baseToUsd * dolarRates.paralelo;
@@ -237,7 +213,6 @@ const CurrencyConverter: React.FC = () => {
               );
             }
 
-            // Calculate rate relative to base
             const rate = convertAmount(1, baseRateCurr, currency.code);
 
             return (
@@ -253,8 +228,6 @@ const CurrencyConverter: React.FC = () => {
           })}
         </div>
       </div>
-
-      {/* Dolar Widget */}
     </div>
   );
 };

@@ -17,8 +17,6 @@ const Login: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  // Load users on mount
-  // Load users on mount
   useEffect(() => {
     const loadUsers = async () => {
       const stored = await getStoredUsers();
@@ -34,7 +32,7 @@ const Login: React.FC = () => {
 
   const handleUserSelect = (user: { username: string, avatar?: string }) => {
     setSelectedUser(user);
-    setUsername(user.username); // Pre-fill username for logic, though we only show password input
+    setUsername(user.username);
     setPassword('');
     setView('login');
   };
@@ -45,7 +43,7 @@ const Login: React.FC = () => {
       setSelectedUser(null);
       setPassword('');
     } else {
-      // If no users, can't go back to select, stay in register
+      // None
     }
   };
 
@@ -53,14 +51,10 @@ const Login: React.FC = () => {
     e.preventDefault();
 
     if (view === 'login' && selectedUser) {
-      // Authenticating selected user
       await login(selectedUser.username, password);
-    } else if (view === 'register') {
-      // Creating new user
       if (username && password) {
         const success = await register(username, password);
         if (success) {
-          // Reload users list for next time (though we are auto logged in)
           const updated = getStoredUsers();
           setUsers(updated);
         }
@@ -72,7 +66,6 @@ const Login: React.FC = () => {
     <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
       <div className="bg-white rounded-3xl shadow-xl w-full max-w-4xl flex overflow-hidden border border-slate-100">
 
-        {/* Left Side - Interaction Area */}
         <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center min-h-[500px]">
           <div className="flex items-center gap-2 mb-8">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden">
@@ -93,8 +86,6 @@ const Login: React.FC = () => {
             }
           </p>
 
-
-          {/* VIEW: SELECT PROFILE */}
           {view === 'select' && (
             <div className="flex-1">
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 mb-8">
@@ -127,7 +118,6 @@ const Login: React.FC = () => {
             </div>
           )}
 
-          {/* VIEW: LOGIN or REGISTER */}
           {(view === 'login' || view === 'register') && (
             <form onSubmit={handleSubmit} className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
 
@@ -235,8 +225,7 @@ const Login: React.FC = () => {
             </p>
           </div>
         </div>
-
-        {/* Right Side - Image/Banner */}
+        
         <div className="hidden md:block w-1/2 bg-indigo-600 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-indigo-900 to-blue-800 opacity-90 z-10"></div>
           <img

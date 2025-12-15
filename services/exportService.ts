@@ -2,13 +2,12 @@
 import { Transaction, Category } from '../types/index';
 
 export const exportToExcel = (transactions: Transaction[], categories: Category[], filename: string) => {
-    // Simple CSV export for now
     const headers = ['Date', 'Description', 'Amount', 'Type', 'Category', 'Status'];
     const rows = transactions.map(t => {
         const category = categories.find(c => c.id === t.categoryId);
         return [
             t.date,
-            `"${t.description.replace(/"/g, '""')}"`, // Escape quotes
+            `"${t.description.replace(/"/g, '""')}"`,
             t.amount,
             t.type,
             category ? `"${category.name}"` : 'Unknown',
@@ -30,7 +29,6 @@ export const exportToExcel = (transactions: Transaction[], categories: Category[
 };
 
 export const generatePDFReport = (transactions: Transaction[]) => {
-    // Placeholder for PDF generation
     console.log("PDF Report generation not yet implemented");
     alert("PDF generation coming soon!");
 };

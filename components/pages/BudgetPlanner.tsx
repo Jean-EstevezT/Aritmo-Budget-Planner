@@ -15,7 +15,7 @@ const BudgetPlanner: React.FC = () => {
 
   const expenseCategories = categories.filter(c => c.type === 'expense');
 
-  // Calculate stats
+  // -----------------
   const categoryStats = expenseCategories.map(cat => {
     const spent = transactions
       .filter(t => t.categoryId === cat.id && t.type === 'expense')
@@ -33,7 +33,6 @@ const BudgetPlanner: React.FC = () => {
 
   const handleEditClick = (id: string, currentLimitUSD: number) => {
     setEditingCatId(id);
-    // Pre-fill with value converted to display currency
     if (currentLimitUSD > 0) {
       const val = convertAmountSync(currentLimitUSD, 'USD', displayCurrency);
       setEditAmount(val.toFixed(2));
@@ -45,7 +44,6 @@ const BudgetPlanner: React.FC = () => {
   const handleSaveLimit = (id: string) => {
     const cat = categories.find(c => c.id === id);
     if (cat) {
-      // Input is in DisplayCurrency -> Convert to USD for storage
       const val = parseFloat(editAmount);
       const limitInUSD = isNaN(val) ? 0 : convertInputToUSD(val, displayCurrency);
       updateCategory({ ...cat, budgetLimit: limitInUSD });
@@ -66,7 +64,6 @@ const BudgetPlanner: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Summary Card */}
         <div className="lg:col-span-1 space-y-6">
           <div className="bg-indigo-900 text-white p-6 rounded-2xl shadow-xl bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -mr-10 -mt-10"></div>
@@ -114,7 +111,6 @@ const BudgetPlanner: React.FC = () => {
           )}
         </div>
 
-        {/* Categories List */}
         <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
           <h3 className="text-lg font-bold text-slate-800 mb-6">{t('budget.dist')}</h3>
           <div className="space-y-6">

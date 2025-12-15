@@ -19,7 +19,6 @@ const Header: React.FC = () => {
   const notifRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
@@ -33,7 +32,7 @@ const Header: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Filter bills for notifications (Due today or Overdue, or coming up in 3 days)
+  // bills for notifications 
   const notifications = bills.filter(bill => {
     if (bill.isPaid) return false;
     const today = new Date();
@@ -44,7 +43,7 @@ const Header: React.FC = () => {
     const diffTime = due.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-    return diffDays <= 3; // Show bills due within 3 days or overdue
+    return diffDays <= 3; 
   }).sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
 
   const getNotifStatus = (dueDate: string) => {
@@ -62,7 +61,6 @@ const Header: React.FC = () => {
 
   return (
     <header className="h-20 bg-white border-b border-slate-100 px-8 flex items-center justify-between sticky top-0 z-20">
-      {/* Search Bar */}
       <div className="hidden md:flex items-center gap-3 bg-slate-50 px-4 py-2.5 rounded-xl border border-slate-100 w-96 focus-within:ring-2 focus-within:ring-indigo-100 transition-all">
         <Search className="w-5 h-5 text-slate-400" />
         <input
@@ -72,9 +70,7 @@ const Header: React.FC = () => {
         />
       </div>
 
-      {/* Right Side Actions */}
       <div className="flex items-center gap-6 ml-auto">
-        {/* Currency Selector */}
         <div className="flex items-center gap-2 bg-slate-50 p-1.5 rounded-xl border border-slate-100">
           <div className="p-1 bg-white rounded-lg shadow-sm text-slate-600">
             <Globe className="w-3.5 h-3.5" />
@@ -90,7 +86,6 @@ const Header: React.FC = () => {
           </select>
         </div>
 
-        {/* VES Rate Toggle */}
         {displayCurrency === 'VES' && (
           <div className="flex bg-slate-50 p-1 rounded-lg border border-slate-100">
             <button
@@ -108,7 +103,6 @@ const Header: React.FC = () => {
           </div>
         )}
 
-        {/* Language Switcher */}
         <div className="flex gap-2 items-center bg-slate-50 p-1 rounded-lg border border-slate-100">
           <button
             onClick={() => {
@@ -144,7 +138,6 @@ const Header: React.FC = () => {
             )}
           </button>
 
-          {/* Notification Dropdown */}
           {showNotifs && (
             <div className="absolute right-0 mt-3 w-80 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2">
               <div className="p-4 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
@@ -200,7 +193,6 @@ const Header: React.FC = () => {
             <ChevronDown className={`w-4 h-4 text-slate-400 hidden md:block transition-transform duration-200 ${showProfileMenu ? 'rotate-180' : ''}`} />
           </button>
 
-          {/* Profile Dropdown */}
           {showProfileMenu && (
             <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2">
               <div className="p-2">

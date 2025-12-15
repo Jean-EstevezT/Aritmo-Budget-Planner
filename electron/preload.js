@@ -19,26 +19,20 @@ contextBridge.exposeInMainWorld('electron', {
         addBill: (username, bill) => ipcRenderer.invoke('db:addBill', { username, bill }),
         updateBill: (username, bill) => ipcRenderer.invoke('db:updateBill', { username, bill }),
         deleteBill: (username, id) => ipcRenderer.invoke('db:deleteBill', { username, id }),
-        // Analytics
         getFinancialSummary: (username) => ipcRenderer.invoke('db:getFinancialSummary', username),
         getCategoryBreakdown: (username) => ipcRenderer.invoke('db:getCategoryBreakdown', username),
         getMonthlyHistory: (username) => ipcRenderer.invoke('db:getMonthlyHistory', username),
-        // Settings
         saveSetting: (username, key, value) => ipcRenderer.invoke('db:saveSetting', { username, key, value }),
         getSetting: (username, key) => ipcRenderer.invoke('db:getSetting', { username, key }),
-        // Debts
         addDebt: (username, debt) => ipcRenderer.invoke('db:addDebt', { username, debt }),
         updateDebt: (username, debt) => ipcRenderer.invoke('db:updateDebt', { username, debt }),
         deleteDebt: (username, id) => ipcRenderer.invoke('db:deleteDebt', { username, id }),
-        // Recurring Rules
         addRecurringRule: (username, rule) => ipcRenderer.invoke('db:addRecurringRule', { username, rule }),
         updateRecurringRule: (username, rule) => ipcRenderer.invoke('db:updateRecurringRule', { username, rule }),
         deleteRecurringRule: (username, id) => ipcRenderer.invoke('db:deleteRecurringRule', { username, id }),
-        // Savings Goals
         addSavingsGoal: (username, goal) => ipcRenderer.invoke('db:addSavingsGoal', { username, goal }),
         updateSavingsGoal: (username, goal) => ipcRenderer.invoke('db:updateSavingsGoal', { username, goal }),
         deleteSavingsGoal: (username, id) => ipcRenderer.invoke('db:deleteSavingsGoal', { username, id }),
-        // Backup
         exportData: (username) => ipcRenderer.invoke('db:exportData', username),
         importData: (username) => ipcRenderer.invoke('db:importData', username),
     }

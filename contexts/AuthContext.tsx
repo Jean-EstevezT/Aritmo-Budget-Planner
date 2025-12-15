@@ -8,7 +8,7 @@ interface User {
 }
 
 interface StoredUser extends User {
-  password: string; // In a real app, this should be hashed!
+  password: string;
 }
 
 interface AuthContextType {
@@ -33,7 +33,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check local storage for existing session on mount
     const storedSession = localStorage.getItem(SESSION_KEY);
     if (storedSession) {
       try {
@@ -94,21 +93,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setError(null);
 
     const avatar = `https://ui-avatars.com/api/?name=${username}&background=4f46e5&color=fff`;
-    // Use current language preference for new user
     const userLang = language;
 
     try {
       const result = await window.electron.auth.register(username, password, avatar, userLang);
 
       if (result.success) {
-        // Auto login
         const sessionUser: User = { username, avatar, language: userLang };
         setUser(sessionUser);
         localStorage.setItem(SESSION_KEY, JSON.stringify(sessionUser));
         setIsLoading(false);
         return true;
       } else {
-        setError('login.userExists'); // Simplified error mapping
+        setError('login.userExists');
         setIsLoading(false);
         return false;
       }

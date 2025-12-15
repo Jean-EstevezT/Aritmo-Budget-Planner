@@ -2,13 +2,13 @@
 export interface Transaction {
   id: string;
   description: string;
-  amount: number; // Normalized to USD (Base Currency)
+  amount: number;
   date: string;
-  categoryId: string; // Link to Category ID
+  categoryId: string;
   type: 'income' | 'expense';
   status: 'completed' | 'pending';
-  originalAmount: number; // The amount entered by the user
-  originalCurrency: string; // The currency code (e.g., 'VES')
+  originalAmount: number;
+  originalCurrency: string;
 }
 
 export interface Category {
@@ -16,7 +16,7 @@ export interface Category {
   name: string;
   type: 'income' | 'expense';
   color: string;
-  budgetLimit?: number; // Only for expense
+  budgetLimit?: number;
 }
 
 export interface Bill {
@@ -67,7 +67,7 @@ export enum ViewState {
   TRANSACTIONS = 'TRANSACTIONS',
   BILLS = 'BILLS',
   BUDGET = 'BUDGET',
-  SAVINGS = 'SAVINGS', // New for Savings Goals
+  SAVINGS = 'SAVINGS',
   DEBT = 'DEBT',
   CONVERTER = 'CONVERTER',
   SETTINGS = 'SETTINGS',

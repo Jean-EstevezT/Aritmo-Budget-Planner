@@ -18,14 +18,13 @@ interface DataContextType {
   updateBill: (b: Bill) => void;
   toggleBillPaid: (id: string) => void;
   deleteBill: (id: string) => void;
-  // Debt Methods
   addDebt: (d: Omit<Debt, 'id'>) => void;
   updateDebt: (d: Debt) => void;
   deleteDebt: (id: string) => void;
 
   getCategoryColor: (id: string) => string;
   getCategoryName: (id: string) => string;
-  user: any; // Or User type if available
+  user: any;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -63,7 +62,6 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Load data
   useEffect(() => {
     if (!user) {
       setTransactions([]);
@@ -82,7 +80,6 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (data && (data.transactions || data.categories)) {
           setTransactions(data.transactions || []);
           const loadedCats: Category[] = data.categories || [];
-          // Merge defaults
           const mergedCats = [...loadedCats];
           defaultCategories.forEach(defCat => {
             if (!mergedCats.some(c => c.id === defCat.id)) {
@@ -95,7 +92,6 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           setRecurringRules(data.recurringRules || []);
           setSavingsGoals(data.savingsGoals || []);
         } else {
-          // New user or empty data
           setTransactions([]);
           setCategories(defaultCategories);
           setBills([]);
@@ -114,16 +110,10 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     loadData();
   }, [user]);
-
-  // Save data - REMOVED AUTO SAVE
-  // We now save incrementally.
-
   const addTransaction = (t: Omit<Transaction, 'id'>) => {
     if (!user) return;
     const newTransaction = { ...t, id: Date.now().toString() };
-    // Optimistic UI update
     setTransactions(prev => [newTransaction, ...prev]);
-    // DB Update
     window.electron.db.addTransaction(user.username, newTransaction);
   };
 
@@ -186,9 +176,6 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setBills(prev => prev.filter(b => b.id !== id));
     window.electron.db.deleteBill(user.username, id);
   };
-
-  // --- Debt Methods ---
-
   const addDebt = (d: Omit<Debt, 'id'>) => {
     if (!user) return;
     const newDebt = { ...d, id: Date.now().toString() };
@@ -208,7 +195,6 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     window.electron.db.deleteDebt(user.username, id);
   };
 
-  // --- RECURRING RULES ---
   const addRecurringRule = (r: Omit<RecurringRule, 'id'>) => {
     if (!user) return;
     const newRule = { ...r, id: Date.now().toString() };
@@ -228,8 +214,6 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     window.electron.db.deleteRecurringRule(user.username, id);
   };
 
-
-  // --- SAVINGS GOALS ---
   const addSavingsGoal = (g: Omit<SavingsGoal, 'id'>) => {
     if (!user) return;
     const newGoal = { ...g, id: Date.now().toString() };

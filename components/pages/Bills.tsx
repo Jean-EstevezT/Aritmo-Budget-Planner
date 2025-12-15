@@ -10,11 +10,10 @@ const Bills: React.FC = () => {
   const { t } = useLanguage();
   const { formatAmount } = useCurrency();
 
-  // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  // Form State
+  // Form
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState('');
@@ -22,10 +21,10 @@ const Bills: React.FC = () => {
 
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
 
-  // Notification State
+  // Notification
   const [notifPermission, setNotifPermission] = useState(Notification.permission);
 
-  // Calendar State
+  // Calendar
   const [currentDate, setCurrentDate] = useState(new Date());
 
   useEffect(() => {
@@ -70,7 +69,6 @@ const Bills: React.FC = () => {
   const unpaidBills = bills.filter(b => !b.isPaid).sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
   const paidBills = bills.filter(b => b.isPaid).sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime());
 
-  // Quick Stats
   const totalUnpaid = unpaidBills.reduce((acc, b) => acc + b.amount, 0);
   const nextDueDate = unpaidBills.length > 0 ? unpaidBills[0].dueDate : '-';
 
@@ -107,7 +105,6 @@ const Bills: React.FC = () => {
       };
 
       if (editingId) {
-        // Find existing to preserve isPaid status if needed, or pass it in update
         const existing = bills.find(b => b.id === editingId);
         updateBill({
           ...payload,
@@ -132,7 +129,7 @@ const Bills: React.FC = () => {
     return diffDays;
   };
 
-  // Calendar Helpers
+  // Calendar
   const getDaysInMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
   const getFirstDayOfMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth(), 1).getDay();
 
@@ -150,7 +147,6 @@ const Bills: React.FC = () => {
 
     return (
       <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden flex flex-col h-[600px]">
-        {/* Calendar Header */}
         <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-white">
           <div className="flex items-center gap-4">
             <h3 className="text-2xl font-bold text-slate-800 capitalize">{monthName} <span className="text-slate-400 font-medium">{year}</span></h3>
@@ -168,14 +164,12 @@ const Bills: React.FC = () => {
           </div>
         </div>
 
-        {/* Week Days */}
         <div className="grid grid-cols-7 border-b border-slate-100 bg-slate-50/50">
           {weekDays.map(d => (
             <div key={d} className="py-3 text-center text-xs font-bold text-slate-400 uppercase tracking-wider">{d}</div>
           ))}
         </div>
 
-        {/* Days Grid */}
         <div className="grid grid-cols-7 flex-1 auto-rows-fr bg-slate-50/30">
           {Array.from({ length: startDay }).map((_, i) => (
             <div key={`empty-${i}`} className="border-r border-b border-slate-100 bg-white/50"></div>
@@ -335,7 +329,6 @@ const Bills: React.FC = () => {
         </div>
       </header>
 
-      {/* Stats Summary Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
           <div className="p-3 bg-rose-50 rounded-xl">
@@ -449,7 +442,6 @@ const Bills: React.FC = () => {
         renderCalendar()
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Upcoming Bills */}
           <div className="space-y-4">
             <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></div>
@@ -467,7 +459,6 @@ const Bills: React.FC = () => {
             )}
           </div>
 
-          {/* Paid History */}
           <div className="space-y-4">
             <h3 className="text-lg font-bold text-slate-800 opacity-60 flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-emerald-500"></div>

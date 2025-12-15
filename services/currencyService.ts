@@ -1,6 +1,5 @@
 const BASE_URL = 'http://www.floatrates.com/daily/usd.json';
 
-// Fallback rates relative to USD (approximate)
 export const MOCK_RATES: { [key: string]: number } = {
   USD: 1,
   EUR: 0.92,
@@ -30,7 +29,6 @@ export const getExchangeRate = async (from: string, to: string): Promise<number 
 
     const data = await response.json();
 
-    // Calculate cross rate via USD
     const getRateFromUSD = (currency: string): number => {
       if (currency === 'USD') return 1;
       const code = currency.toLowerCase();
@@ -48,11 +46,8 @@ export const getExchangeRate = async (from: string, to: string): Promise<number 
     return rateTo / rateFrom;
 
   } catch (error) {
-    // Quietly handle the error by falling back to mock rates
 
     if (MOCK_RATES[from] && MOCK_RATES[to]) {
-      // Calculate cross rate via USD
-      // Rate = (USD -> To) / (USD -> From)
       const rate = MOCK_RATES[to] / MOCK_RATES[from];
       return parseFloat(rate.toFixed(4));
     }
@@ -61,7 +56,6 @@ export const getExchangeRate = async (from: string, to: string): Promise<number 
   }
 };
 
-// Synchronous helper for instant UI updates using mock rates (since we want the UI to feel snappy)
 export const convertAmountSync = (amount: number, from: string, to: string): number => {
   if (from === to) return amount;
   const rate = (MOCK_RATES[to] || 1) / (MOCK_RATES[from] || 1);

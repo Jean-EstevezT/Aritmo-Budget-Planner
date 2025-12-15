@@ -11,7 +11,6 @@ interface LanguageContextType {
 
 const translations = {
   en: {
-    // Sidebar
     'menu.dashboard': 'Dashboard',
     'menu.transactions': 'Transactions',
     'menu.bills': 'Bills & Payables',
@@ -26,14 +25,12 @@ const translations = {
     'menu.debt': 'Debt Management',
     'menu.about': 'About',
 
-    // Header
     'header.search': 'Search transactions, bills...',
     'header.notif.empty': 'No pending notifications',
     'header.notif.due': 'due today',
     'header.notif.overdue': 'is overdue',
     'header.notif.soon': 'due soon',
 
-    // Dashboard
     'dash.title': 'Financial Overview',
     'dash.subtitle': 'Welcome back, check your financial health today.',
     'dash.export': 'Export Report',
@@ -52,7 +49,6 @@ const translations = {
     'dash.noBudget': 'No budgets set.',
     'dash.monthTag': 'Month',
 
-    // Transactions
     'trans.title': 'Transactions',
     'trans.subtitle': 'Manage your income and expenses.',
     'trans.add': 'Add Transaction',
@@ -93,7 +89,6 @@ const translations = {
     'trans.stored': 'stored',
     'trans.searchPlaceholder': 'Search transactions...',
 
-    // Bills
     'bills.title': 'Bills & Payables',
     'bills.subtitle': 'Track your upcoming payments and avoid late fees.',
     'bills.add': 'Add Bill',
@@ -123,7 +118,6 @@ const translations = {
     'bills.placeholderCat': 'e.g. Utilities, Entertainment',
     'bills.edit': 'Edit Bill',
 
-    // Budget
     'budget.title': 'Budget Planner',
     'budget.subtitle': 'Plan your monthly spending and track limits.',
     'budget.add': 'Add Category',
@@ -137,7 +131,6 @@ const translations = {
     'budget.editLimit': 'Edit Limit',
     'budget.setLimit': 'Set Budget Limit',
 
-    // Savings
     'savings.title': 'Savings & Goals',
     'savings.subtitle': 'Visualize and reach your saving targets',
     'savings.new': 'New Goal',
@@ -156,7 +149,6 @@ const translations = {
     'savings.confirm': 'Confirm',
     'savings.cancel': 'Cancel',
 
-    // Debt
     'debt.title': 'Debt Management',
     'debt.subtitle': 'Track loans & credit cards to become debt-free.',
     'debt.add': 'Add Debt',
@@ -175,7 +167,6 @@ const translations = {
     'debt.dueDate': 'Due Date (Day of Month)',
     'debt.update': 'Update Debt',
 
-    // Settings / Categories
     'settings.title': 'Settings',
     'settings.subtitle': 'Manage your preferences and categories.',
     'settings.cat': 'Categories',
@@ -199,7 +190,6 @@ const translations = {
     'settings.restoreSuccess': 'Data restored successfully!',
     'settings.restoreConfirm': 'WARNING: This will overwrite ALL your current data. Are you sure?',
 
-    // Categories Translations
     'cat.salary': 'Salary',
     'cat.freelance': 'Freelance',
     'cat.investments': 'Investments',
@@ -223,9 +213,6 @@ const translations = {
     'cat.kids': 'Kids & Family',
     'cat.subscriptions': 'Subscriptions',
 
-
-
-    // Currency
     'curr.title': 'Currency Exchange',
     'curr.subtitle': 'Real-time conversion rates.',
     'curr.amount': 'Amount',
@@ -236,7 +223,6 @@ const translations = {
     'curr.liveRates': 'Live Exchange Rates',
     'curr.base': 'Base Currency',
 
-    // About
     'about.title': 'About Aritmo',
     'about.subtitle': 'Meet the developer and see what is coming next.',
     'about.bio': 'pythonist 🐍 :: tool development 📡 :: open source dev 📦 :: data analytics 📊 :: c/c++ & java ☕ :: math enthusiast 📐:🕸️ :: game assets 🎮 :: backend',
@@ -253,7 +239,6 @@ const translations = {
     'about.feedback.desc': 'Your suggestions help shape the future of Aritmo.',
     'about.contact': 'Contact Me',
 
-    // Login
     'login.welcome': 'Who is looking?',
     'login.welcomeReg': 'Create Profile',
     'login.subtitle': 'Select your profile to enter.',
@@ -273,7 +258,6 @@ const translations = {
     'login.enterPass': 'Enter password for'
   },
   es: {
-    // Sidebar
     'menu.dashboard': 'Panel Principal',
     'menu.transactions': 'Transacciones',
     'menu.bills': 'Cuentas por Pagar',
@@ -288,14 +272,12 @@ const translations = {
     'menu.debt': 'Gestión de Deudas',
     'menu.about': 'Acerca de',
 
-    // Header
     'header.search': 'Buscar transacciones, facturas...',
     'header.notif.empty': 'No hay notificaciones pendientes',
     'header.notif.due': 'vence hoy',
     'header.notif.overdue': 'está vencido',
     'header.notif.soon': 'vence pronto',
 
-    // Dashboard
     'dash.title': 'Resumen Financiero',
     'dash.subtitle': 'Bienvenido, revisa tu salud financiera hoy.',
     'dash.export': 'Exportar Reporte',
@@ -314,7 +296,6 @@ const translations = {
     'dash.noBudget': 'Sin presupuestos.',
     'dash.monthTag': 'Mes',
 
-    // Transactions
     'trans.title': 'Transacciones',
     'trans.subtitle': 'Administra tus ingresos y gastos.',
     'trans.add': 'Nueva Transacción',
@@ -355,7 +336,6 @@ const translations = {
     'trans.stored': 'almacenado',
     'trans.searchPlaceholder': 'Buscar transacciones...',
 
-    // Bills
     'bills.title': 'Cuentas por Pagar',
     'bills.subtitle': 'Rastrea tus próximos pagos y evita recargos.',
     'bills.add': 'Agregar Cuenta',
@@ -385,7 +365,6 @@ const translations = {
     'bills.placeholderCat': 'ej. Servicios, Entretenimiento',
     'bills.edit': 'Editar Cuenta',
 
-    // Budget
     'budget.title': 'Planificador de Gastos',
     'budget.subtitle': 'Planifica tus gastos mensuales y límites.',
     'budget.add': 'Nueva Categoría',
@@ -399,7 +378,6 @@ const translations = {
     'budget.editLimit': 'Editar Límite',
     'budget.setLimit': 'Establecer Límite',
 
-    // Savings
     'savings.title': 'Huchas y Metas',
     'savings.subtitle': 'Visualiza y alcanza tus objetivos de ahorro',
     'savings.new': 'Nueva Meta',
@@ -418,7 +396,6 @@ const translations = {
     'savings.confirm': 'Confirmar',
     'savings.cancel': 'Cancelar',
 
-    // Debt
     'debt.title': 'Gestión de Deudas',
     'debt.subtitle': 'Rastrea préstamos y tarjetas para liberarte de deudas.',
     'debt.add': 'Agregar Deuda',
@@ -437,11 +414,6 @@ const translations = {
     'debt.dueDate': 'Día de Vencimiento',
     'debt.update': 'Actualizar Deuda',
 
-
-
-
-
-    // Settings / Categories
     'settings.title': 'Configuración',
     'settings.subtitle': 'Administra tus preferencias y categorías.',
     'settings.cat': 'Categorías',
@@ -465,7 +437,6 @@ const translations = {
     'settings.restoreSuccess': '¡Datos restaurados con éxito!',
     'settings.restoreConfirm': 'ADVERTENCIA: Esto sobrescribirá TODOS tus datos actuales. ¿Estás seguro?',
 
-    // Categories Translations
     'cat.salary': 'Salario',
     'cat.freelance': 'Freelance',
     'cat.investments': 'Inversiones',
@@ -489,9 +460,6 @@ const translations = {
     'cat.kids': 'Hijos y Familia',
     'cat.subscriptions': 'Suscripciones',
 
-
-
-    // Currency
     'curr.title': 'Cambio de Divisas',
     'curr.subtitle': 'Tasas de conversión en tiempo real.',
     'curr.amount': 'Cantidad',
@@ -502,7 +470,6 @@ const translations = {
     'curr.liveRates': 'Tasas de Cambio en Vivo',
     'curr.base': 'Moneda Base',
 
-    // About
     'about.title': 'Acerca de Aritmo',
     'about.subtitle': 'Conoce al desarrollador y lo que viene.',
     'about.bio': 'pythonist 🐍 :: tool development 📡 :: open source dev 📦 :: data analytics 📊 :: c/c++ & java ☕ :: math enthusiast 📐:🕸️ :: game assets 🎮 :: backend',
@@ -519,7 +486,6 @@ const translations = {
     'about.feedback.desc': 'Tus comentarios ayudan a dar forma al futuro de Aritmo.',
     'about.contact': 'Contáctame',
 
-    // Login
     'login.welcome': '¿Quién eres?',
     'login.welcomeReg': 'Crear Perfil',
     'login.subtitle': 'Selecciona tu perfil para entrar.',

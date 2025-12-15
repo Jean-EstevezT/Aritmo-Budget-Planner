@@ -18,7 +18,8 @@ const Dashboard: React.FC = () => {
   const [summary, setSummary] = React.useState({ totalIncome: 0, totalExpense: 0, balance: 0 });
   const [pieData, setPieData] = React.useState<{ name: string, value: number, color: string }[]>([]);
 
-  // Load dashboard data
+  // ------------------------------
+  // dashboard data
   React.useEffect(() => {
     if (user?.username) {
       window.electron.db.getFinancialSummary(user.username).then(setSummary);
@@ -36,7 +37,6 @@ const Dashboard: React.FC = () => {
 
   const { totalIncome, totalExpense, balance } = summary;
 
-  // Upcoming bills total
   const upcomingBillsTotal = bills
     .filter(b => !b.isPaid)
     .reduce((sum, b) => sum + b.amount, 0);
@@ -46,7 +46,6 @@ const Dashboard: React.FC = () => {
     exportToExcel(transactions, categories, filename);
   };
 
-  // Monthly aggregated data for charts
   const chartData = React.useMemo(() => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const currentYear = new Date().getFullYear();
@@ -62,22 +61,19 @@ const Dashboard: React.FC = () => {
       }
     });
 
-    // Filter to show only up to current month or just simplified
     return dataMap.slice(0, new Date().getMonth() + 1);
   }, [transactions]);
 
-  // Specific colors for chart with more green touches
   const COLORS = ['#6366f1', '#10b981', '#f43f5e', '#f59e0b', '#8b5cf6', '#14b8a6'];
 
   const recentTransactions = transactions.slice(0, 5);
 
-  // Calculate Budget Progress for Top Categories
   const expenseCategories = categories.filter(c => c.type === 'expense' && c.budgetLimit && c.budgetLimit > 0).slice(0, 4);
 
   const StatCard = ({ title, value, icon: Icon, variant = 'default' }: any) => {
     const getStyles = () => {
       switch (variant) {
-        case 'featured': // Balance
+        case 'featured':
           return 'bg-gradient-to-br from-indigo-500 to-violet-500 text-white shadow-xl shadow-indigo-200 border-none';
         case 'income':
           return 'bg-gradient-to-br from-emerald-400 to-teal-500 text-white shadow-xl shadow-emerald-200 border-none';
@@ -109,7 +105,6 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700 pb-8">
-      {/* Header Section */}
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/50 backdrop-blur-sm p-6 rounded-3xl border border-white/50 shadow-sm">
         <div>
           <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight flex items-center gap-2">
@@ -129,7 +124,6 @@ const Dashboard: React.FC = () => {
         </div>
       </header>
 
-      {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard title={t('dash.totalBalance')} value={formatAmount(balance)} icon={Wallet} variant="featured" />
         <StatCard title={t('dash.income')} value={formatAmount(totalIncome)} icon={ArrowUpRight} variant="income" />
@@ -138,7 +132,6 @@ const Dashboard: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        {/* Main Chart */}
         <div className="xl:col-span-2 bg-white p-8 rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/50 min-w-0 hover:shadow-2xl transition-shadow duration-500">
           <div className="flex justify-between items-center mb-8">
             <div className="flex items-center gap-3">
@@ -147,7 +140,6 @@ const Dashboard: React.FC = () => {
               </div>
               <h3 className="text-xl font-bold text-slate-800">{t('dash.chartTitle')}</h3>
             </div>
-            {/* Legend */}
             <div className="flex gap-4">
               <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Income
@@ -185,8 +177,6 @@ const Dashboard: React.FC = () => {
             </ResponsiveContainer>
           </div>
         </div>
-
-        {/* Categories / Monthly Limits */}
         <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/50 flex flex-col min-w-0 hover:shadow-2xl transition-shadow duration-500">
           <div className="flex items-center gap-3 mb-8">
             <div className="p-2.5 bg-emerald-50 rounded-xl">
@@ -238,7 +228,6 @@ const Dashboard: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        {/* Spending Breakdown Pie Chart */}
         <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/50 min-w-0 hover:shadow-2xl transition-shadow duration-500 flex flex-col items-center">
           <h3 className="text-xl font-bold text-slate-800 mb-6 w-full text-left">{t('dash.breakdown')}</h3>
           <div className="h-[300px] w-full flex items-center justify-center relative">
@@ -287,8 +276,6 @@ const Dashboard: React.FC = () => {
             )}
           </div>
         </div>
-
-        {/* Recent Transactions */}
         <div className="xl:col-span-2 bg-gradient-to-br from-white to-slate-50 p-8 rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/50 flex flex-col min-w-0 hover:shadow-2xl transition-shadow duration-500">
           <div className="flex justify-between items-center mb-8">
             <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">

@@ -9,18 +9,13 @@ const SavingsGoals: React.FC = () => {
     const { savingsGoals, addSavingsGoal, updateSavingsGoal, deleteSavingsGoal } = useData();
     const { t } = useLanguage();
     const { formatAmount } = useCurrency();
-
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
-
-    // Form inputs
     const [name, setName] = useState('');
     const [targetAmount, setTargetAmount] = useState('');
     const [currentAmount, setCurrentAmount] = useState('');
     const [deadline, setDeadline] = useState('');
     const [color, setColor] = useState('bg-indigo-500');
-
-    // Deposit/Withdraw Modal
     const [transactGoal, setTransactGoal] = useState<SavingsGoal | null>(null);
     const [transactAmount, setTransactAmount] = useState('');
     const [transactType, setTransactType] = useState<'deposit' | 'withdraw'>('deposit');
@@ -100,8 +95,6 @@ const SavingsGoals: React.FC = () => {
                     <Plus className="w-4 h-4" /> {t('savings.new')}
                 </button>
             </div>
-
-            {/* Total Summary */}
             <div className="bg-gradient-to-r from-emerald-500 to-teal-600 p-6 rounded-2xl shadow-lg text-white">
                 <div className="flex items-center gap-4">
                     <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
@@ -114,13 +107,11 @@ const SavingsGoals: React.FC = () => {
                 </div>
             </div>
 
-            {/* Goals Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {savingsGoals.map(goal => {
                     const progress = Math.min((goal.currentAmount / goal.targetAmount) * 100, 100);
                     return (
                         <div key={goal.id} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow group relative">
-                            {/* Actions */}
                             <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <button onClick={() => openModal(goal)} className="p-1.5 bg-slate-100 rounded text-slate-500 hover:text-indigo-600"><Edit2 className="w-3.5 h-3.5" /></button>
                                 <button onClick={() => deleteSavingsGoal(goal.id)} className="p-1.5 bg-slate-100 rounded text-slate-500 hover:text-rose-600"><Trash2 className="w-3.5 h-3.5" /></button>
@@ -137,13 +128,9 @@ const SavingsGoals: React.FC = () => {
                                 <div className="text-2xl font-bold text-slate-800">{formatAmount(goal.currentAmount)}</div>
                                 <div className="text-xs text-slate-400 font-medium mb-1">de {formatAmount(goal.targetAmount)}</div>
                             </div>
-
-                            {/* Progress Bar */}
                             <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden mb-4">
                                 <div className={`h-full ${goal.color} transition-all duration-1000`} style={{ width: `${progress}%` }}></div>
                             </div>
-
-                            {/* Buttons */}
                             <div className="grid grid-cols-2 gap-3">
                                 <button onClick={() => { setTransactGoal(goal); setTransactType('deposit'); }} className="flex items-center justify-center gap-2 py-2 rounded-lg bg-emerald-50 text-emerald-600 text-sm font-bold hover:bg-emerald-100 transition-colors">
                                     <TrendingUp className="w-4 h-4" /> {t('savings.deposit')}
@@ -161,8 +148,6 @@ const SavingsGoals: React.FC = () => {
                         </div>
                     );
                 })}
-
-                {/* Empty State */}
                 {savingsGoals.length === 0 && (
                     <div className="col-span-full py-12 text-center text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
                         <Target className="w-12 h-12 mx-auto mb-3 text-slate-300" />
@@ -171,8 +156,6 @@ const SavingsGoals: React.FC = () => {
                     </div>
                 )}
             </div>
-
-            {/* Create/Edit Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                     <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
@@ -215,8 +198,6 @@ const SavingsGoals: React.FC = () => {
                     </div>
                 </div>
             )}
-
-            {/* Deposit/Withdraw Modal */}
             {transactGoal && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                     <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 text-center">
