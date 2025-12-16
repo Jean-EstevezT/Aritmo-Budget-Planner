@@ -6,6 +6,7 @@
   "main": "electron/main.js",
   "productName": "Aritmo",
   "description": "Aritmo - Budget Planner",
+  "license": "GPL-3.0",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
