@@ -4,16 +4,20 @@ A powerful, privacy-focused desktop application for personal finance management.
 
 ## Features
 
-- ** Interactive Dashboard**: Visual overview of your financial health with dynamic charts.
-- ** Transaction Management**: Easily record and categorize income and expenses.
-- ** Bill Tracking**: Keep track of recurring bills, due dates, and payment status.
-- ** Budget Planning**: Set monthly limits for different categories to control your spending.
-- ** Savings Goals**: Create and track progress towards your financial goals.
-- ** Debt Manager**: Monitor and plan your debt payoffs effectively.
-- ** Currency Converter**: Real-time currency conversion tools.
-- ** Multi-language Support**: Interface available in multiple languages to suit your preference.
-- ** Privacy First**: All data is stored locally using SQLite. No external servers or tracking.
-- ** Modern UI**: Clean, responsive interface styled with Tailwind CSS and Lucide icons.
+- **Interactive Dashboard**: Visual overview of your financial health with dynamic charts.
+- **Transaction Management**: Easily record and categorize income and expenses.
+- **Bill Tracking**: Keep track of recurring bills, due dates, and payment status.
+- **Budget Planning**: Set monthly limits for different categories to control your spending.
+- **Savings Goals**: Create and track progress towards your financial goals.
+- **Debt Manager**: Monitor and plan your debt payoffs effectively.
+- **Currency Converter**: Real-time currency conversion tools.
+- **Multi-language Support**: Interface available in multiple languages to suit your preference.
+- **Privacy First**: All data is stored locally using SQLite. No external servers or tracking.
+- **Modern UI**: Clean, responsive interface styled with Tailwind CSS and Lucide icons.
+
+## Screenshots
+
+![Aritmo Budget Planner](screenTest/test.jpg)
 
 ## Stack
 
