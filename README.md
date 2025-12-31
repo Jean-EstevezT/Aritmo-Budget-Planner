@@ -68,24 +68,6 @@ The application uses the following public APIs for real-time data:
     npm run electron:dist
     ```
 
-## Project Structure
-
-```
-Aritmo-Budget-Planner/
-├── components/         # React UI Components
-│   ├── layout/         # Sidebar, Header, etc.
-│   ├── pages/          # Main application views (Dashboard, Budget, etc.)
-│   └── ui/             # Reusable UI elements
-├── contexts/           # React Contexts (Auth, Data, Language, Currency)
-├── electron/           # Electron main process and preload scripts
-├── services/           # Business logic and Service integrations
-├── types/              # TypeScript type definitions
-├── App.tsx             # Main React Application Component
-├── index.html          # Entry HTML file
-├── vite.config.ts      # Vite Configuration
-└── package.json        # Project dependencies and scripts
-```
-
 ## Developer
 
 **Jean Estevez**

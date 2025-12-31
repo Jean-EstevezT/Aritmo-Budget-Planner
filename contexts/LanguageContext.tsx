@@ -21,7 +21,7 @@ const translations = {
     'menu.logout': 'Logout',
     'menu.main': 'MAIN MENU',
     'menu.viewCurr': 'VIEW CURRENCY',
-    'menu.savings': 'Piggy Banks',
+    'menu.savings': 'Savings',
     'menu.debt': 'Debt Management',
     'menu.about': 'About',
 
@@ -268,7 +268,7 @@ const translations = {
     'menu.logout': 'Cerrar Sesión',
     'menu.main': 'MENÚ PRINCIPAL',
     'menu.viewCurr': 'MONEDA DE VISTA',
-    'menu.savings': 'Huchas',
+    'menu.savings': 'Ahorro',
     'menu.debt': 'Gestión de Deudas',
     'menu.about': 'Acerca de',
 
@@ -378,7 +378,7 @@ const translations = {
     'budget.editLimit': 'Editar Límite',
     'budget.setLimit': 'Establecer Límite',
 
-    'savings.title': 'Huchas y Metas',
+    'savings.title': 'Ahorro y Metas',
     'savings.subtitle': 'Visualiza y alcanza tus objetivos de ahorro',
     'savings.new': 'Nueva Meta',
     'savings.total': 'Ahorro Total',
