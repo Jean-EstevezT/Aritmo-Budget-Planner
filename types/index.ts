@@ -56,6 +56,8 @@ export interface SavingsGoal {
   currentAmount: number;
   deadline?: string;
   color: string;
+  icon?: string;
+  monthlyContribution?: number;
 }
 
 export interface CurrencyRate {

@@ -1,9 +1,25 @@
 import React, { useState } from 'react';
-import { Plus, Target, PiggyBank, Edit2, Trash2, X, TrendingUp, Minus } from 'lucide-react';
+import { Plus, Target, PiggyBank, Edit2, Trash2, X, TrendingUp, Minus, Car, Home, Plane, GraduationCap, Heart, Star, Briefcase, Smartphone, Gift, Music, Camera, Zap } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { SavingsGoal } from '../../types/index';
+
+const iconMap: { [key: string]: React.ElementType } = {
+    'target': Target,
+    'car': Car,
+    'home': Home,
+    'travel': Plane,
+    'education': GraduationCap,
+    'medical': Heart,
+    'star': Star,
+    'work': Briefcase,
+    'tech': Smartphone,
+    'gift': Gift,
+    'hobby': Music,
+    'camera': Camera,
+    'electronics': Zap
+};
 
 const SavingsGoals: React.FC = () => {
     const { savingsGoals, addSavingsGoal, updateSavingsGoal, deleteSavingsGoal } = useData();
@@ -14,8 +30,10 @@ const SavingsGoals: React.FC = () => {
     const [name, setName] = useState('');
     const [targetAmount, setTargetAmount] = useState('');
     const [currentAmount, setCurrentAmount] = useState('');
+    const [monthlyContribution, setMonthlyContribution] = useState('');
     const [deadline, setDeadline] = useState('');
     const [color, setColor] = useState('bg-indigo-500');
+    const [selectedIcon, setSelectedIcon] = useState('target');
     const [transactGoal, setTransactGoal] = useState<SavingsGoal | null>(null);
     const [transactAmount, setTransactAmount] = useState('');
     const [transactType, setTransactType] = useState<'deposit' | 'withdraw'>('deposit');
@@ -27,15 +45,19 @@ const SavingsGoals: React.FC = () => {
             setName(goal.name);
             setTargetAmount(goal.targetAmount.toString());
             setCurrentAmount(goal.currentAmount.toString());
+            setMonthlyContribution(goal.monthlyContribution ? goal.monthlyContribution.toString() : '');
             setDeadline(goal.deadline || '');
             setColor(goal.color);
+            setSelectedIcon(goal.icon || 'target');
         } else {
             setEditingId(null);
             setName('');
             setTargetAmount('');
             setCurrentAmount('0');
+            setMonthlyContribution('');
             setDeadline('');
             setColor('bg-indigo-500');
+            setSelectedIcon('target');
         }
         setIsModalOpen(true);
     };
@@ -46,8 +68,10 @@ const SavingsGoals: React.FC = () => {
             name,
             targetAmount: parseFloat(targetAmount),
             currentAmount: parseFloat(currentAmount),
+            monthlyContribution: monthlyContribution ? parseFloat(monthlyContribution) : undefined,
             deadline,
-            color
+            color,
+            icon: selectedIcon
         };
         if (editingId) {
             updateSavingsGoal({ ...payload, id: editingId });
@@ -110,6 +134,22 @@ const SavingsGoals: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {savingsGoals.map(goal => {
                     const progress = Math.min((goal.currentAmount / goal.targetAmount) * 100, 100);
+                    const GoalIcon = iconMap[goal.icon || 'target'] || Target;
+
+                    let timeToGoal = null;
+                    if (goal.monthlyContribution && goal.monthlyContribution > 0 && goal.currentAmount < goal.targetAmount) {
+                        const remaining = goal.targetAmount - goal.currentAmount;
+                        const months = Math.ceil(remaining / goal.monthlyContribution);
+                        if (months > 0) {
+                            if (months >= 12) {
+                                const years = (months / 12).toFixed(1);
+                                timeToGoal = `${years} ${t('savings.years')}`;
+                            } else {
+                                timeToGoal = `${months} ${t('savings.months')}`;
+                            }
+                        }
+                    }
+
                     return (
                         <div key={goal.id} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow group relative">
                             <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -119,7 +159,7 @@ const SavingsGoals: React.FC = () => {
 
                             <div className="flex items-center gap-3 mb-4">
                                 <div className={`w-10 h-10 rounded-full flex items-center justify-center ${goal.color} bg-opacity-20`}>
-                                    <Target className={`w-5 h-5 ${goal.color.replace('bg-', 'text-')}`} />
+                                    <GoalIcon className={`w-5 h-5 ${goal.color.replace('bg-', 'text-')}`} />
                                 </div>
                                 <h3 className="font-bold text-slate-800">{goal.name}</h3>
                             </div>
@@ -131,7 +171,7 @@ const SavingsGoals: React.FC = () => {
                             <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden mb-4">
                                 <div className={`h-full ${goal.color} transition-all duration-1000`} style={{ width: `${progress}%` }}></div>
                             </div>
-                            <div className="grid grid-cols-2 gap-3">
+                            <div className="grid grid-cols-2 gap-3 mb-4">
                                 <button onClick={() => { setTransactGoal(goal); setTransactType('deposit'); }} className="flex items-center justify-center gap-2 py-2 rounded-lg bg-emerald-50 text-emerald-600 text-sm font-bold hover:bg-emerald-100 transition-colors">
                                     <TrendingUp className="w-4 h-4" /> {t('savings.deposit')}
                                 </button>
@@ -140,11 +180,18 @@ const SavingsGoals: React.FC = () => {
                                 </button>
                             </div>
 
-                            {goal.deadline && (
-                                <div className="text-xs text-center text-slate-400 mt-3">
-                                    Meta: {new Date(goal.deadline).toLocaleDateString()}
+                            <div className="flex justify-between items-center text-xs text-slate-400 mt-2 pt-2 border-t border-slate-50">
+                                <div>
+                                    {goal.deadline && (
+                                        <span>Meta: {new Date(goal.deadline).toLocaleDateString()}</span>
+                                    )}
                                 </div>
-                            )}
+                                <div>
+                                    {timeToGoal && (
+                                        <span className="font-medium text-emerald-500">{t('savings.timeToGoal')}: {timeToGoal}</span>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     );
                 })}
@@ -157,8 +204,8 @@ const SavingsGoals: React.FC = () => {
                 )}
             </div>
             {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 my-8">
                         <h3 className="text-lg font-bold mb-4">{editingId ? t('savings.edit') : t('savings.new')}</h3>
                         <form onSubmit={handleSave} className="space-y-4">
                             <div>
@@ -174,9 +221,30 @@ const SavingsGoals: React.FC = () => {
                                 <input required type="number" value={currentAmount} onChange={e => setCurrentAmount(e.target.value)} className="w-full p-2 border rounded-lg" />
                             </div>
                             <div>
+                                <label className="block text-xs font-bold mb-1">{t('savings.monthlyContribution')} ({t('trans.approx')})</label>
+                                <input type="number" value={monthlyContribution} onChange={e => setMonthlyContribution(e.target.value)} className="w-full p-2 border rounded-lg" placeholder="0.00" />
+                            </div>
+                            <div>
                                 <label className="block text-xs font-bold mb-1">{t('savings.deadline')} (Optional)</label>
                                 <input type="date" value={deadline} onChange={e => setDeadline(e.target.value)} className="w-full p-2 border rounded-lg" />
                             </div>
+
+                            <div>
+                                <label className="block text-xs font-bold mb-2">{t('savings.icon')}</label>
+                                <div className="grid grid-cols-7 gap-2">
+                                    {Object.entries(iconMap).map(([key, Icon]) => (
+                                        <button
+                                            key={key}
+                                            type="button"
+                                            onClick={() => setSelectedIcon(key)}
+                                            className={`p-2 rounded-lg flex items-center justify-center transition-colors ${selectedIcon === key ? 'bg-indigo-100 text-indigo-600 ring-2 ring-indigo-500' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}
+                                        >
+                                            <Icon className="w-5 h-5" />
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
                             <div>
                                 <label className="block text-xs font-bold mb-2">{t('settings.color')}</label>
                                 <div className="flex gap-2 flex-wrap">

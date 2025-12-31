@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, ReactNode } from 'react';
 
 type Language = 'en' | 'es';
@@ -148,6 +147,11 @@ const translations = {
     'savings.in': 'in',
     'savings.confirm': 'Confirm',
     'savings.cancel': 'Cancel',
+    'savings.icon': 'Icon',
+    'savings.monthlyContribution': 'Est. Monthly Contribution',
+    'savings.timeToGoal': 'Est. Time to Goal',
+    'savings.months': 'months',
+    'savings.years': 'years',
 
     'debt.title': 'Debt Management',
     'debt.subtitle': 'Track loans & credit cards to become debt-free.',
@@ -395,6 +399,11 @@ const translations = {
     'savings.in': 'en',
     'savings.confirm': 'Confirmar',
     'savings.cancel': 'Cancelar',
+    'savings.icon': 'Icono',
+    'savings.monthlyContribution': 'Aportación Mensual Est.',
+    'savings.timeToGoal': 'Tiempo Est. para Meta',
+    'savings.months': 'meses',
+    'savings.years': 'años',
 
     'debt.title': 'Gestión de Deudas',
     'debt.subtitle': 'Rastrea préstamos y tarjetas para liberarte de deudas.',
