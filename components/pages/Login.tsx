@@ -1,13 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
-import { Wallet, ArrowRight, Lock, User, Database, Plus, ChevronLeft } from 'lucide-react';
+import { Wallet, ArrowRight, Lock, User, Database, Plus, ChevronLeft, Trash2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 
 type LoginView = 'select' | 'login' | 'register';
 
 const Login: React.FC = () => {
-  const { login, register, getStoredUsers, isLoading, error } = useAuth();
+  const { login, register, getStoredUsers, deleteUser, isLoading, error } = useAuth();
   const { t, language, setLanguage } = useLanguage();
 
   const [view, setView] = useState<LoginView>('select');
@@ -52,11 +52,16 @@ const Login: React.FC = () => {
 
     if (view === 'login' && selectedUser) {
       await login(selectedUser.username, password);
-      if (username && password) {
-        const success = await register(username, password);
-        if (success) {
-          const updated = getStoredUsers();
-          setUsers(updated);
+    } else if (view === 'register') {
+      const success = await register(username, password);
+      if (success) {
+        const updated = await getStoredUsers();
+        setUsers(updated);
+        const newUser = updated.find(u => u.username === username);
+        if (newUser) {
+          handleUserSelect(newUser);
+        } else {
+          setView('select');
         }
       }
     }
@@ -90,18 +95,39 @@ const Login: React.FC = () => {
             <div className="flex-1">
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 mb-8">
                 {users.map(u => (
-                  <button
-                    key={u.username}
-                    onClick={() => handleUserSelect(u)}
-                    className="flex flex-col items-center gap-3 group"
-                  >
-                    <div className="w-20 h-20 rounded-full border-4 border-slate-100 group-hover:border-indigo-100 group-hover:scale-105 transition-all overflow-hidden shadow-sm">
-                      <img src={u.avatar} alt={u.username} className="w-full h-full object-cover" />
+                  <div key={u.username} className="relative group flex flex-col items-center gap-3">
+                    <div className="relative">
+                      <button
+                        onClick={() => handleUserSelect(u)}
+                        className="w-20 h-20 rounded-full border-4 border-slate-100 group-hover:border-indigo-100 group-hover:scale-105 transition-all overflow-hidden shadow-sm outline-none focus:ring-2 focus:ring-indigo-500"
+                      >
+                        <img src={u.avatar} alt={u.username} className="w-full h-full object-cover" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (window.confirm(t('common.confirmDelete') || 'Are you sure?')) {
+                            deleteUser(u.username).then(success => {
+                              if (success) {
+                                getStoredUsers().then(setUsers);
+                              }
+                            });
+                          }
+                        }}
+                        className="absolute -top-1 -right-1 w-8 h-8 bg-white rounded-full text-slate-400 hover:text-rose-500 hover:bg-rose-50 shadow-md border border-slate-200 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all z-10 scale-90 group-hover:scale-100 cursor-pointer"
+                        title="Delete Profile"
+                        type="button"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
-                    <span className="font-bold text-slate-700 group-hover:text-indigo-600 transition-colors">
+                    <button
+                      onClick={() => handleUserSelect(u)}
+                      className="font-bold text-slate-700 group-hover:text-indigo-600 transition-colors"
+                    >
                       {u.username}
-                    </span>
-                  </button>
+                    </button>
+                  </div>
                 ))}
                 <button
                   onClick={() => { setView('register'); setUsername(''); setPassword(''); }}
@@ -225,7 +251,7 @@ const Login: React.FC = () => {
             </p>
           </div>
         </div>
-        
+
         <div className="hidden md:block w-1/2 bg-indigo-600 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-indigo-900 to-blue-800 opacity-90 z-10"></div>
           <img

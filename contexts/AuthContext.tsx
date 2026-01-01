@@ -16,6 +16,7 @@ interface AuthContextType {
   login: (username: string, password: string) => Promise<boolean>;
   register: (username: string, password: string) => Promise<boolean>;
   deleteAccount: (password: string) => Promise<boolean>;
+  deleteUser: (username: string) => Promise<boolean>;
   logout: () => void;
   getStoredUsers: () => Promise<User[]>;
   isAuthenticated: boolean;
@@ -118,22 +119,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const deleteAccount = async (password: string): Promise<boolean> => {
     if (!user) return false;
-    setIsLoading(true);
-    setError(null);
+    return false;
+  };
 
+  const deleteUser = async (username: string): Promise<boolean> => {
     try {
-      const result = await window.electron.auth.deleteUser(user.username, password);
+      const result = await window.electron.auth.deleteUser(username);
       if (result.success) {
-        logout();
+        if (user && user.username === username) {
+          logout();
+        }
         return true;
-      } else {
-        setError(result.message || 'login.error');
-        setIsLoading(false);
-        return false;
       }
+      return false;
     } catch (e) {
-      setError('login.error');
-      setIsLoading(false);
       return false;
     }
   };
@@ -144,7 +143,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, deleteAccount, logout, getStoredUsers, isAuthenticated: !!user, isLoading, error }}>
+    <AuthContext.Provider value={{ user, login, register, deleteAccount, deleteUser, logout, getStoredUsers, isAuthenticated: !!user, isLoading, error }}>
       {children}
     </AuthContext.Provider>
   );

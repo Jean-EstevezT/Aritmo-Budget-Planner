@@ -1,4 +1,4 @@
-#       Aritmo Budget Planner
+# Aritmo Budget Planner
 
 A powerful, privacy-focused desktop application for personal finance management. Built with modern web technologies and wrapped in Electron, Aritmo runs locally on your machine, ensuring your financial data remains secure and private.
 
@@ -11,8 +11,9 @@ A powerful, privacy-focused desktop application for personal finance management.
 - **Savings Goals**: Create and track progress towards your financial goals.
 - **Debt Manager**: Monitor and plan your debt payoffs effectively.
 - **Currency Converter**: Real-time currency conversion tools.
-- **Multi-language Support**: Interface available in multiple languages to suit your preference.
-- **Privacy First**: All data is stored locally using SQLite. No external servers or tracking.
+- **Multi-language Support**: Interface available in multiple languages.
+- **Offline First**: Works without internet connection using local JSON storage.
+- **Cloud Sync**: Automatically synchronizes data with Supabase when online.
 - **Modern UI**: Clean, responsive interface styled with Tailwind CSS and Lucide icons.
 
 ## Screenshots
@@ -26,7 +27,7 @@ A powerful, privacy-focused desktop application for personal finance management.
 - **Build Tool**: [Vite](https://vitejs.dev/)
 - **Language**: [TypeScript](https://www.typescriptlang.org/)
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/)
-- **Database**: [SQLite](https://www.sqlite.org/) (via `better-sqlite3`)
+- **Database**: [Supabase](https://supabase.com/) (PostgreSQL) + Local JSON Storage
 - **Visualization**: [Recharts](https://recharts.org/)
 - **Icons**: [Lucide React](https://lucide.dev/)
 
@@ -57,13 +58,23 @@ The application uses the following public APIs for real-time data:
     npm install
     ```
 
-3.  **Run the application (Development)**
+3.  **Setup Environment Variables**
+    Create a `.env` file in the root directory:
+    ```bash
+    SUPABASE_URL=your_supabase_url
+    SUPABASE_KEY=your_supabase_anon_key
+    ```
+
+4.  **Setup Database**
+    Run the SQL commands from `supabase_schema.sql` in your Supabase SQL Editor to create the required tables with the necessary columns (including `updated_at`).
+
+5.  **Run the application (Development)**
     ```bash
     npm run dev:electron
     ```
     This command runs both the Vite dev server and the Electron application concurrently.
 
-4.  **Build for Production**
+6.  **Build for Production**
     ```bash
     npm run electron:dist
     ```

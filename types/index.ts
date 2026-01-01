@@ -9,6 +9,7 @@ export interface Transaction {
   status: 'completed' | 'pending';
   originalAmount: number;
   originalCurrency: string;
+  tag?: string;
 }
 
 export interface Category {

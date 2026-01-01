@@ -35,11 +35,14 @@ const Transactions: React.FC = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
 
+  const [tag, setTag] = useState('');
+
   const filteredTransactions = transactions.filter(tr => {
     if (activeTab !== 'all' && tr.type !== activeTab) return false;
     const matchesSearch =
       tr.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      t(getCategoryName(tr.categoryId)).toLowerCase().includes(searchTerm.toLowerCase());
+      t(getCategoryName(tr.categoryId)).toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (tr.tag && tr.tag.toLowerCase().includes(searchTerm.toLowerCase()));
     return matchesSearch;
   });
 
@@ -51,6 +54,7 @@ const Transactions: React.FC = () => {
     setCategoryId('');
     setType('expense');
     setStatus('completed');
+    setTag('');
     setEditingId(null);
   };
 
@@ -64,6 +68,7 @@ const Transactions: React.FC = () => {
       setCategoryId(t.categoryId);
       setType(t.type);
       setStatus(t.status);
+      setTag(t.tag || '');
     } else {
       resetForm();
       if (activeTab !== 'all') setType(activeTab);
@@ -112,7 +117,6 @@ const Transactions: React.FC = () => {
     setIsRecurringModalOpen(false);
   };
 
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const val = parseFloat(amount);
@@ -125,7 +129,8 @@ const Transactions: React.FC = () => {
       date,
       categoryId,
       type,
-      status
+      status,
+      tag
     };
 
     if (editingId) updateTransaction({ ...payload, id: editingId });
@@ -475,6 +480,26 @@ const Transactions: React.FC = () => {
                     <option key={c.id} value={c.id}>{t(c.name)}</option>
                   ))}
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-900 mb-1 uppercase">{t('trans.tag') || 'Tag / Subcategory'}</label>
+                <input
+                  type="text"
+                  value={tag}
+                  onChange={e => setTag(e.target.value)}
+                  list="tag-suggestions"
+                  placeholder={t('trans.tagPlaceholder') || 'e.g. Rice, Uber, Cinema...'}
+                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none text-slate-900"
+                />
+                <datalist id="tag-suggestions">
+                  {Array.from(new Set(transactions
+                    .filter(t => t.categoryId === categoryId && t.tag)
+                    .map(t => t.tag)
+                  )).sort().map(tag => (
+                    <option key={tag} value={tag} />
+                  ))}
+                </datalist>
               </div>
               {inputCurrency !== 'USD' && amount && (
                 <div className="text-xs text-slate-500 bg-slate-100 p-2 rounded-lg text-center">
